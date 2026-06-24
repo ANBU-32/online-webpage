@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioQuiz — Biology Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0b1120;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d42;
+    --accent: #22d3a0;
+    --accent2: #3b82f6;
+    --accent-dim: rgba(34,211,160,0.12);
+    --text: #f0f4f8;
+    --muted: #6b7f96;
+    --wrong: #f87171;
+    --correct: #22d3a0;
+    --radius: 12px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── PAGE SYSTEM ── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; flex-direction: column; }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .nav-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(34,211,160,0.3);
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO (registration page) ── */
+  .hero {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 3rem 2.5rem;
+    align-items: center;
+  }
+
+  .hero-left { padding-right: 4rem; }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1.5px;
+    background: var(--accent);
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -1px;
+    margin-bottom: 1.4rem;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+    max-width: 400px;
+    line-height: 1.75;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  .stat { display: flex; flex-direction: column; }
+  .stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* cell diagram decoration */
+  .cell-art {
+    position: relative;
+    height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cell-art svg { width: 100%; height: 100%; }
+
+  /* ── REGISTRATION FORM ── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(34,211,160,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .form-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .field { margin-bottom: 1.3rem; }
+  .field label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.8rem 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(34,211,160,0.15);
+  }
+  .field input::placeholder { color: var(--muted); }
+  .field .err {
+    font-size: 0.75rem;
+    color: var(--wrong);
+    margin-top: 0.3rem;
+    display: none;
+  }
+  .field.invalid input { border-color: var(--wrong); }
+  .field.invalid .err { display: block; }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #0b1120;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.9rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 0.5rem;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  /* ── QUIZ PAGE ── */
+  #quiz-page {
+    flex-direction: column;
+  }
+
+  .quiz-header {
+    padding: 1.5rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: var(--surface);
+  }
+
+  .quiz-meta { display: flex; flex-direction: column; gap: 0.2rem; }
+  .quiz-meta .qname {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .quiz-meta .qtitle {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .quiz-progress-wrap { flex: 1; max-width: 340px; }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .progress-bar {
+    height: 5px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .timer-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(34,211,160,0.3);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    min-width: 80px;
+    text-align: center;
+  }
+  .timer-badge.warn { color: var(--wrong); background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3); }
+
+  /* questions grid */
+  .quiz-body {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .questions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .q-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.4rem;
+    transition: border-color 0.2s;
+  }
+  .q-card:hover { border-color: rgba(34,211,160,0.35); }
+  .q-card.answered { border-color: rgba(34,211,160,0.4); }
+
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .q-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .opt {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+  .opt.selected {
+    border-color: var(--accent2);
+    background: rgba(59,130,246,0.15);
+    color: #93c5fd;
+  }
+  .opt.correct {
+    border-color: var(--correct);
+    background: rgba(34,211,160,0.15);
+    color: var(--correct);
+  }
+  .opt.wrong {
+    border-color: var(--wrong);
+    background: rgba(248,113,113,0.15);
+    color: var(--wrong);
+  }
+  .opt .opt-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    min-width: 14px;
+  }
+
+  /* submit bar */
+  .submit-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.5rem 0 2rem;
+    border-top: 1px solid var(--border);
+  }
+  .answered-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .answered-count span { color: var(--accent); font-weight: 500; }
+
+  .btn-submit {
+    background: var(--accent);
+    color: #0b1120;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.75rem 2.5rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.02em;
+  }
+  .btn-submit:hover { opacity: 0.88; }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── RESULT PAGE ── */
+  #result-page {
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+  }
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 3rem;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(34,211,160,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .score-ring {
+    width: 140px; height: 140px;
+    margin: 0 auto 2rem;
+    position: relative;
+  }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring .score-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .score-lbl {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .result-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  .result-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .rs { display: flex; flex-direction: column; align-items: center; }
+  .rs-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+  }
+  .rs-num.c { color: var(--correct); }
+  .rs-num.w { color: var(--wrong); }
+  .rs-num.s { color: var(--accent2); }
+  .rs-lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .btn-retake {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.7rem 2rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-retake:hover { background: var(--accent-dim); }
+
+  /* ── BACKGROUND GRID ── */
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(34,211,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,211,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+  }
+  nav, .hero, .quiz-header, .quiz-body, #result-page > * { position: relative; z-index: 1; }
+
+  @media (max-width: 768px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-left { padding-right: 0; margin-bottom: 2rem; }
+    .cell-art { display: none; }
+    .questions-grid { grid-template-columns: 1fr; }
+    .options { grid-template-columns: 1fr; }
+    nav { padding: 1rem 1.2rem; }
+    .quiz-body { padding: 1.5rem 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<!-- ══════════════ PAGE 1: REGISTRATION ══════════════ -->
+<div class="page active" id="reg-page">
+  <nav>
+    <div class="logo">Bio<span>Quiz</span></div>
+    <div class="nav-tag">Biology Challenge 2025</div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-left">
+      <div class="eyebrow">Challenge Begins Here</div>
+      <h1 class="hero-title">Test Your<br><em>Biology IQ</em></h1>
+      <p class="hero-desc">50 carefully curated questions spanning plant biology and human physiology. Timed. Scored. No retakes mid-quiz.</p>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-num">50</span>
+          <span class="stat-label">Questions</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">30</span>
+          <span class="stat-label">Minutes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">2</span>
+          <span class="stat-label">Sections</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="form-card">
+      <div class="form-title">Register to Begin</div>
+      <div class="form-sub">Enter your details — your score will be saved under your name.</div>
+
+      <div class="field" id="f-name">
+        <label>Full Name</label>
+        <input type="text" id="inp-name" placeholder="e.g. Arjun Sharma" autocomplete="name">
+        <div class="err">Please enter your full name.</div>
+      </div>
+      <div class="field" id="f-email">
+        <label>Email Address</label>
+        <input type="email" id="inp-email" placeholder="you@example.com" autocomplete="email">
+        <div class="err">Please enter a valid email address.</div>
+      </div>
+      <div class="field" id="f-phone">
+        <label>Phone Number</label>
+        <input type="tel" id="inp-phone" placeholder="+91 98765 43210" autocomplete="tel">
+        <div class="err">Please enter a valid 10-digit phone number.</div>
+      </div>
+
+      <button class="btn-primary" onclick="startQuiz()">Start Quiz →</button>
+    </div>
+
+    <!-- Cell art decoration -->
+    <div class="cell-art" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE 2: QUIZ ══════════════ -->
+<div class="page" id="quiz-page">
+  <nav>
+    <div class="logo">Bio<span>Quiz</span></div>
+    <div class="nav-tag" id="user-badge"></div>
+  </nav>
+
+  <div class="quiz-header">
+    <div class="quiz-meta">
+      <div class="qname">Biology Challenge</div>
+      <div class="qtitle">50 Questions · Plant & Human Biology</div>
+    </div>
+    <div class="quiz-progress-wrap">
+      <div class="progress-info">
+        <span id="prog-text">0 / 50 answered</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    </div>
+    <div class="timer-badge" id="timer-display">30:00</div>
+  </div>
+
+  <div class="quiz-body" id="quiz-body">
+    <!-- Questions injected by JS -->
+  </div>
+</div>
+
+<!-- ══════════════ PAGE 3: RESULTS ══════════════ -->
+<div class="page" id="result-page">
+  <nav>
+    <div class="logo">Bio<span>Quiz</span></div>
+    <div class="nav-tag">Results</div>
+  </nav>
+  <div class="result-card">
+    <div class="score-ring">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="60" fill="none" stroke="#1e2d42" stroke-width="10"/>
+        <circle cx="70" cy="70" r="60" fill="none" stroke="url(#rg)" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377" id="ring-fill"/>
+        <defs>
+          <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#22d3a0"/>
+            <stop offset="100%" stop-color="#3b82f6"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="score-text">
+        <div class="score-pct" id="r-pct">0%</div>
+        <div class="score-lbl">Score</div>
+      </div>
+    </div>
+    <div class="result-title" id="r-title">Well Done!</div>
+    <div class="result-sub" id="r-sub"></div>
+    <div class="result-stats">
+      <div class="rs"><span class="rs-num c" id="r-correct">0</span><span class="rs-lbl">Correct</span></div>
+      <div class="rs"><span class="rs-num w" id="r-wrong">0</span><span class="rs-lbl">Wrong</span></div>
+      <div class="rs"><span class="rs-num s" id="r-skip">0</span><span class="rs-lbl">Skipped</span></div>
+    </div>
+    <button class="btn-retake" onclick="retake()">← Back to Registration</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // ── SECTION 1: Plant Biology ──
+  { s:'Plant Biology', q:'Photosynthesis occurs in:', opts:['Nucleus','Chloroplast','Ribosome','Vacuole'], ans:1 },
+  { s:'Plant Biology', q:'Water is transported through:', opts:['Phloem','Xylem','Cortex','Cambium'], ans:1 },
+  { s:'Plant Biology', q:'The green pigment in plants is:', opts:['Chlorophyll','Melanin','Hemoglobin','Carotene'], ans:0 },
+  { s:'Plant Biology', q:'Potato is a modified:', opts:['Root','Stem','Leaf','Fruit'], ans:1 },
+  { s:'Plant Biology', q:'Mendel worked on:', opts:['Rice','Wheat','Pea','Maize'], ans:2 },
+  { s:'Plant Biology', q:'Study of fungi is called:', opts:['Ecology','Cytology','Mycology','Genetics'], ans:2 },
+  { s:'Plant Biology', q:'Food is transported by:', opts:['Xylem','Phloem','Epidermis','Cortex'], ans:1 },
+  { s:'Plant Biology', q:'Cell wall is mainly made of:', opts:['Chitin','Cellulose','Protein','Lipid'], ans:1 },
+  { s:'Plant Biology', q:'Double fertilization occurs in:', opts:['Bryophytes','Gymnosperms','Angiosperms','Pteridophytes'], ans:2 },
+  { s:'Plant Biology', q:'Sporopollenin is present in:', opts:['Ovule','Seed coat','Pollen wall','Endosperm'], ans:2 },
+  { s:'Plant Biology', q:'Coconut water is:', opts:['Embryo','Endosperm','Cotyledon','Pericarp'], ans:1 },
+  { s:'Plant Biology', q:'Which is a C₄ plant?', opts:['Rice','Wheat','Maize','Potato'], ans:2 },
+  { s:'Plant Biology', q:'Nitrogen fixation in legumes is carried out by:', opts:['Yeast','Rhizobium','Amoeba','Algae'], ans:1 },
+  { s:'Plant Biology', q:'Guard cells regulate:', opts:['Respiration','Germination','Stomatal opening','Reproduction'], ans:2 },
+  { s:'Plant Biology', q:'The edible part of mango is:', opts:['Endocarp','Mesocarp','Seed','Epicarp'], ans:1 },
+  { s:'Plant Biology', q:'ATP is known as:', opts:['Hormone','Enzyme','Energy currency','Pigment'], ans:2 },
+  { s:'Plant Biology', q:'Bryophytes are called:', opts:['Flowering plants','Amphibians of plant kingdom','Seed plants','Vascular plants'], ans:1 },
+  { s:'Plant Biology', q:'First stable product of Calvin cycle is:', opts:['OAA','PEP','PGA','RuBP'], ans:2 },
+  { s:'Plant Biology', q:'Casparian strips occur in:', opts:['Cortex','Epidermis','Endodermis','Pericycle'], ans:2 },
+  { s:'Plant Biology', q:'Enzyme responsible for CO₂ fixation in Calvin cycle:', opts:['Catalase','ATPase','Rubisco','Amylase'], ans:2 },
+  { s:'Plant Biology', q:'Crossing over occurs during:', opts:['Leptotene','Zygotene','Pachytene','Diplotene'], ans:2 },
+  { s:'Plant Biology', q:'Aleurone layer is rich in:', opts:['Lipids','Proteins','DNA','Cellulose'], ans:1 },
+  { s:'Plant Biology', q:'Water potential of pure water is:', opts:['+1','-1','0','100'], ans:2 },
+  { s:'Plant Biology', q:'Double fertilization was discovered by:', opts:['Mendel','Darwin','Nawaschin','Lamarck'], ans:2 },
+  { s:'Plant Biology', q:'Pleiotropy means:', opts:['One trait controlled by many genes','One gene controls many traits','Linked genes','Multiple alleles'], ans:1 },
+  // ── SECTION 2: Human Biology ──
+  { s:'Human Biology', q:'Functional unit of kidney:', opts:['Neuron','Nephron','Alveolus','Osteon'], ans:1 },
+  { s:'Human Biology', q:'Human heart has:', opts:['2 chambers','3 chambers','4 chambers','5 chambers'], ans:2 },
+  { s:'Human Biology', q:'Oxygen-carrying pigment in blood:', opts:['Keratin','Hemoglobin','Melanin','Myosin'], ans:1 },
+  { s:'Human Biology', q:'Insulin is secreted by:', opts:['Liver','Pancreas','Thyroid','Kidney'], ans:1 },
+  { s:'Human Biology', q:'Human chromosome number:', opts:['44','45','46','48'], ans:2 },
+  { s:'Human Biology', q:'Largest gland in body:', opts:['Thyroid','Liver','Pancreas','Pituitary'], ans:1 },
+  { s:'Human Biology', q:'Study of animals is:', opts:['Botany','Zoology','Ecology','Genetics'], ans:1 },
+  { s:'Human Biology', q:'Basic unit of life:', opts:['Tissue','Organ','Cell','Organ system'], ans:2 },
+  { s:'Human Biology', q:'Pacemaker of heart:', opts:['AV node','SA node','Bundle of His','Purkinje fibres'], ans:1 },
+  { s:'Human Biology', q:'Universal recipient blood group:', opts:['O−','A+','B+','AB+'], ans:3 },
+  { s:'Human Biology', q:'Site of fertilization in humans:', opts:['Ovary','Uterus','Fallopian tube','Vagina'], ans:2 },
+  { s:'Human Biology', q:'Antibodies are produced by:', opts:['RBCs','Platelets','Lymphocytes','Plasma'], ans:2 },
+  { s:'Human Biology', q:'Human sperm is:', opts:['Diploid','Haploid','Triploid','Tetraploid'], ans:1 },
+  { s:'Human Biology', q:'Vitamin D deficiency causes:', opts:['Scurvy','Beriberi','Rickets','Pellagra'], ans:2 },
+  { s:'Human Biology', q:'Largest bone in human body:', opts:['Tibia','Radius','Femur','Humerus'], ans:2 },
+  { s:'Human Biology', q:'Smallest bone in human body:', opts:['Stapes','Malleus','Incus','Ulna'], ans:0 },
+  { s:'Human Biology', q:'Growth hormone is secreted by:', opts:['Thyroid','Pituitary','Pancreas','Adrenal'], ans:1 },
+  { s:'Human Biology', q:'Acrosome is derived from:', opts:['Nucleus','Mitochondria','Golgi apparatus','Ribosome'], ans:2 },
+  { s:'Human Biology', q:'Immunoglobulin crossing placenta:', opts:['IgA','IgM','IgG','IgE'], ans:2 },
+  { s:'Human Biology', q:'Respiratory center is located in:', opts:['Cerebrum','Cerebellum','Medulla oblongata','Hypothalamus'], ans:2 },
+  { s:'Human Biology', q:'Sertoli cells are present in:', opts:['Ovary','Kidney','Testis','Liver'], ans:2 },
+  { s:'Human Biology', q:'Synapsis occurs during:', opts:['Mitosis','Meiosis I','Meiosis II','Cytokinesis'], ans:1 },
+  { s:'Human Biology', q:'Rh factor was discovered by:', opts:['Watson','Mendel','Landsteiner and Wiener','Darwin'], ans:2 },
+  { s:'Human Biology', q:'Hormone that lowers blood calcium level:', opts:['PTH','Calcitonin','Insulin','Adrenaline'], ans:1 },
+  { s:'Human Biology', q:'First heart sound is due to closure of:', opts:['Semilunar valves','AV valves','Aortic valve only','Pulmonary valve only'], ans:1 },
+];
+
+const KEYS = ['A','B','C','D'];
+const TOTAL_TIME = 30 * 60;
+let answers = new Array(50).fill(null);
+let timerInterval = null;
+let timeLeft = TOTAL_TIME;
+let submitted = false;
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function validate() {
+  let ok = true;
+  const name = document.getElementById('inp-name').value.trim();
+  const email = document.getElementById('inp-email').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+
+  const nf = document.getElementById('f-name');
+  const ef = document.getElementById('f-email');
+  const pf = document.getElementById('f-phone');
+
+  nf.classList.toggle('invalid', name.length < 2);
+  ef.classList.toggle('invalid', !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  pf.classList.toggle('invalid', !/^[\d\s\+\-]{10,14}$/.test(phone.replace(/\s/g,'')));
+
+  if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^[\d\s\+\-]{10,14}$/.test(phone.replace(/\s/g,''))) ok = false;
+  return ok ? name : null;
+}
+
+function startQuiz() {
+  const name = validate();
+  if (!name) return;
+  document.getElementById('user-badge').textContent = name;
+  buildQuiz();
+  showPage('quiz-page');
+  startTimer();
+}
+
+function buildQuiz() {
+  answers = new Array(50).fill(null);
+  submitted = false;
+  const body = document.getElementById('quiz-body');
+  let html = '';
+  let lastSection = '';
+
+  QUESTIONS.forEach((q, i) => {
+    if (q.s !== lastSection) {
+      const n = Object.keys(QUESTIONS.filter(x=>x.s===q.s)).length;
+      html += `<div class="section-label">Section — ${q.s}</div><div class="questions-grid" id="grid-${q.s.replace(/\s/g,'-')}">`;
+      lastSection = q.s;
+    }
+
+    html += `<div class="q-card" id="qc-${i}">
+      <div class="q-num">Q${String(i+1).padStart(2,'0')}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+
+    q.opts.forEach((opt, oi) => {
+      html += `<button class="opt" id="opt-${i}-${oi}" onclick="pick(${i},${oi})">
+        <span class="opt-key">${KEYS[oi]}</span>${opt}
+      </button>`;
+    });
+
+    html += `</div></div>`;
+
+    // close grid after last item in section
+    const nextQ = QUESTIONS[i+1];
+    if (!nextQ || nextQ.s !== q.s) html += '</div>';
+  });
+
+  html += `<div class="submit-bar">
+    <div class="answered-count">Answered: <span id="ans-count">0</span> / 50</div>
+    <button class="btn-submit" id="sub-btn" onclick="submitQuiz()">Submit Quiz</button>
+  </div>`;
+
+  body.innerHTML = html;
+}
+
+function pick(qi, oi) {
+  if (submitted) return;
+  answers[qi] = oi;
+  const card = document.getElementById(`qc-${qi}`);
+
+  // clear previous selection in this question
+  card.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  card.classList.add('answered');
+
+  const count = answers.filter(a => a !== null).length;
+  document.getElementById('ans-count').textContent = count;
+  document.getElementById('prog-text').textContent = `${count} / 50 answered`;
+  document.getElementById('prog-pct').textContent = Math.round(count/50*100) + '%';
+  document.getElementById('prog-fill').style.width = (count/50*100) + '%';
+}
+
+function startTimer() {
+  timeLeft = TOTAL_TIME;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const m = String(Math.floor(timeLeft/60)).padStart(2,'0');
+    const s = String(timeLeft%60).padStart(2,'0');
+    const el = document.getElementById('timer-display');
+    el.textContent = `${m}:${s}`;
+    el.classList.toggle('warn', timeLeft <= 120);
+    if (timeLeft <= 0) { clearInterval(timerInterval); submitQuiz(); }
+  }, 1000);
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+
+  let correct = 0, wrong = 0, skipped = 0;
+  QUESTIONS.forEach((q, i) => {
+    const userAns = answers[i];
+    if (userAns === null) {
+      skipped++;
+    } else if (userAns === q.ans) {
+      correct++;
+      document.getElementById(`opt-${i}-${userAns}`)?.classList.add('correct');
+    } else {
+      wrong++;
+      document.getElementById(`opt-${i}-${userAns}`)?.classList.add('wrong');
+      document.getElementById(`opt-${i}-${q.ans}`)?.classList.add('correct');
+    }
+    document.getElementById(`qc-${i}`)?.querySelectorAll('.opt').forEach(b => b.disabled = true);
+  });
+
+  const pct = Math.round(correct / 50 * 100);
+  document.getElementById('r-pct').textContent = pct + '%';
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-skip').textContent = skipped;
+
+  const titles = ['Keep Practicing!','Good Effort!','Well Done!','Great Job!','Excellent!','Biology Master!'];
+  const subs = [
+    'Review your notes and try again.',
+    'You know the basics — keep going!',
+    'Solid performance across both sections.',
+    'Strong grasp of plant and human biology.',
+    'Outstanding! Almost flawless.',
+    'Perfect score! You are a biology genius!'
+  ];
+  const idx = Math.min(5, Math.floor(pct/17));
+  document.getElementById('r-title').textContent = titles[idx];
+  document.getElementById('r-sub').textContent = subs[idx];
+
+  // animate ring
+  const circumference = 377;
+  const offset = circumference - (pct / 100 * circumference);
+  setTimeout(() => {
+    document.getElementById('ring-fill').style.transition = 'stroke-dashoffset 1s ease';
+    document.getElementById('ring-fill').style.strokeDashoffset = offset;
+  }, 200);
+
+  setTimeout(() => showPage('result-page'), 800);
+}
+
+function retake() {
+  clearInterval(timerInterval);
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-email').value = '';
+  document.getElementById('inp-phone').value = '';
+  ['f-name','f-email','f-phone'].forEach(id => document.getElementById(id).classList.remove('invalid'));
+  showPage('reg-page');
+}
+</script>
+</body>
+</html>
