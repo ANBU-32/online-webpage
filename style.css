@@ -33,7 +33,7 @@ margin:auto;
 /* ================= HEADER ================= */
 
 header{
-    position:fixed;
+    position:static;
     top:0;
     left:0;
     width:100%;
@@ -831,5 +831,180 @@ padding:30px;
 font-size:50px;
 
 }
+
+}
+/* ===========================
+   MOBILE RESPONSIVE
+=========================== */
+
+@media (max-width: 768px) {
+
+    /* Header */
+    header .container{
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .logo{
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .logo-text h2{
+        font-size:18px;
+    }
+
+    .logo-text p{
+        font-size:13px;
+    }
+
+    nav{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:12px;
+    }
+
+    nav a{
+        font-size:15px;
+    }
+
+    .header-right{
+        flex-direction:column;
+        gap:12px;
+    }
+
+    /* Hero */
+
+    .hero{
+        padding:60px 20px;
+    }
+
+    .hero-grid{
+        grid-template-columns:1fr;
+        text-align:center;
+    }
+
+    .hero-text h1{
+        font-size:34px;
+        line-height:1.3;
+    }
+
+    .hero-text p{
+        font-size:16px;
+    }
+
+    .hero-buttons{
+        justify-content:center;
+        flex-wrap:wrap;
+        gap:15px;
+    }
+
+    .hero-cards{
+        grid-template-columns:repeat(2,1fr);
+        gap:15px;
+        margin-top:30px;
+    }
+
+    /* Features */
+
+    .feature-grid{
+        grid-template-columns:1fr;
+    }
+
+    /* Infrastructure */
+
+    .gallery{
+        grid-template-columns:1fr;
+    }
+
+    .gallery-card img{
+        height:220px;
+        object-fit:cover;
+    }
+
+    /* Registration */
+
+    .row{
+        flex-direction:column;
+    }
+
+    .input-box{
+        width:100%;
+    }
+
+    input,
+    select{
+        width:100%;
+        font-size:16px;
+    }
+
+    .btn,
+    .btn2{
+        width:100%;
+        margin-bottom:15px;
+    }
+
+    /* Result */
+
+    .result-buttons{
+        display:flex;
+        flex-direction:column;
+        gap:15px;
+    }
+
+    .result-buttons button{
+        width:100%;
+    }
+
+    /* Footer */
+
+    footer{
+        text-align:center;
+        padding:30px 20px;
+    }
+
+}
+
+/* ===========================
+   SMALL MOBILE (480px)
+=========================== */
+
+@media (max-width:480px){
+
+    .container{
+        width:92%;
+    }
+
+    .hero-text h1{
+        font-size:28px;
+    }
+
+    .section-title{
+        font-size:28px;
+    }
+
+    .section-subtitle{
+        font-size:15px;
+    }
+
+    .hero-cards{
+        grid-template-columns:1fr;
+    }
+
+    .badge{
+        font-size:12px;
+    }
+
+    .logo-text h2{
+        font-size:16px;
+    }
+
+    .apply-btn{
+        width:100%;
+        text-align:center;
+    }
 
 }
