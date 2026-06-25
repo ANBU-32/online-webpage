@@ -161,40 +161,7 @@ nav a:hover{
     background:#003f88;
     transform:translateY(-2px);
 }
-@media(max-width:992px){
 
-header .container{
-    flex-direction:column;
-    height:auto;
-    padding:20px 0;
-}
-
-.logo{
-    justify-content:center;
-    margin-bottom:15px;
-}
-
-nav{
-    display:none;
-}
-
-.header-right{
-    margin-top:15px;
-}
-
-.hero h1{
-    font-size:38px;
-}
-
-.hero-cards{
-    grid-template-columns:1fr 1fr;
-}
-
-.feature-grid{
-    grid-template-columns:1fr;
-}
-
-}
 /* ================= HERO ================= */
 
 .hero{
