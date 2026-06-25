@@ -1,42 +1,94 @@
-# Online Quiz Web Application
+# 🎓 MBBS IUK Admission Website
 
-A simple online quiz web application built using HTML, CSS, and JavaScript. The application allows students to enter their details before taking a quiz and automatically calculates their score after submission.
+A modern, responsive landing page for **International University of Kyrgyzstan (IUK)** MBBS admissions. The website is designed to provide prospective students with university information, infrastructure details, an online registration form, and a biology assessment.
 
-## Features
+## 🚀 Features
 
-- Student registration form
-- Collects participant information
-  - Name
-  - Email
-  - Roll Number / Student ID
-- Multiple-choice questions
-- Automatic score calculation
-- Instant result display
-- Responsive design for mobile and desktop
-- Easy to customize questions
+- 🏫 Professional university landing page
+- 📱 Fully responsive design
+- 🎨 Modern UI using HTML5 & CSS3
+- 📖 About IUK section
+- 🏥 Infrastructure gallery
+- 📝 Student registration form
+- 🧪 Biology assessment quiz
+- 📊 Quiz result page
+- 📞 Contact section
+- 💬 Floating WhatsApp button
+- ⚡ Smooth scrolling navigation
 
-- # How to Use
-
-1. Open the application in a web browser.
-2. Enter student details.
-3. Click **Start Quiz**.
-4. Answer all questions.
-5. Click **Submit Quiz**.
-6. View the final score and result.
-
-## Technologies Used
+## 🛠️ Technologies Used
 
 - HTML5
 - CSS3
-- JavaScript (Vanilla JS)
+- JavaScript
+- Font Awesome
+- Google Fonts (Poppins)
 
-## Future Improvements
+## 📂 Project Structure
 
-- Timer for quiz
-- Question randomization
-- Negative marking
-- Leaderboard
+```
+MBBS-IUK/
+│── index.html
+│── style.css
+│── script.js
+│── images/
+│   ├── iuk-logo.png
+│   ├── dr-abi-logo.png
+│   ├── microbiology-lab.jpg
+│   ├── chemistry-lab.jpg
+│   ├── anatomy-models.jpg
+│   ├── smart-classroom.jpg
+│   ├── computer-lab.jpg
+│   └── anatomy-museum.jpg
+└── README.md
+```
+
+## 📷 Screenshots
+
+Add screenshots of your homepage here.
+
+Example:
+
+```
+screenshots/homepage.png
+screenshots/registration.png
+screenshots/quiz.png
+```
+
+## ▶️ Getting Started
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/mbbs-iuk.git
+```
+
+2. Open the project folder
+
+```bash
+cd mbbs-iuk
+```
+
+3. Open `index.html` in your browser.
+
+Or run it using VS Code Live Server.
+
+## 📌 Future Improvements
+
+- Firebase database integration
+- Student login system
+- Online application submission
 - Admin dashboard
-- Database integration
-- Export results to Excel
-- User authentication
+- Email notifications
+- Quiz score storage
+- Backend integration
+
+## 👨‍💻 Author
+
+**Anbu**
+
+GitHub: https://github.com/your-username
+
+## 📄 License
+
+This project is intended for educational and portfolio purposes.
