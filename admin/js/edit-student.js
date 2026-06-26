@@ -9,7 +9,7 @@ const id = params.get("id");
 // Load student data
 async function loadStudent() {
     try {
-        const response = await fetch(`http://localhost:5000/api/applications/${id}`);
+        const response = await fetch("https://online-webpage-mqpl.onrender.com/api/applications");
         const result = await response.json();
 
         if (!result.success) {

@@ -144,7 +144,7 @@ startBtn.addEventListener("click", async () => {
 
   try {
 
-    const API_URL = "https://your-backend-url.com/api";
+    const API_URL = "https://online-webpage-mqpl.onrender.com/api/applications";
 
 fetch(`${API_URL}/applications`,{ 
 
