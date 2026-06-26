@@ -167,23 +167,27 @@ const response = await fetch(`${API_URL}/applications`, {
 
     });
 
-    const data = await response.json();
+    console.log("Status:", response.status);
 
-    if (!data.success) {
+const data = await response.json();
 
-        showError(
-            "name",
-            "nameError",
-            "Registration failed."
-        );
+console.log("Response:", data);
 
-        return;
+if (!data.success) {
 
-    }
+    showError(
+        "name",
+        "nameError",
+        data.message
+    );
+
+    return;
+
+}
 
 } catch (err) {
 
-    console.error(err);
+    console.error("Fetch Error:", err);
 
     showError(
         "name",
