@@ -1008,3 +1008,28 @@ font-size:50px;
     }
 
 }
+.error{
+
+    color:#e53935;
+
+    font-size:13px;
+
+    display:block;
+
+    margin-top:6px;
+
+    min-height:18px;
+
+}
+
+.input-error{
+
+    border:2px solid #e53935 !important;
+
+}
+
+.input-success{
+
+    border:2px solid #28a745 !important;
+
+}

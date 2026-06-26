@@ -1,10 +1,8 @@
 // =====================================
-// MBBS BIOLOGY QUIZ ENGINE - PART 1
+// MBBS BIOLOGY QUIZ ENGINE
 // =====================================
 const questions = [
-
   // ===== PLANT BIOLOGY =====
-
   { q:'Photosynthesis occurs in:', opts:['Nucleus','Chloroplast','Ribosome','Vacuole'], ans:1 },
   { q:'Water is transported through:', opts:['Phloem','Xylem','Cortex','Cambium'], ans:1 },
   { q:'The green pigment in plants is:', opts:['Chlorophyll','Melanin','Hemoglobin','Carotene'], ans:0 },
@@ -24,7 +22,7 @@ const questions = [
   { q:'Bryophytes are called:', opts:['Flowering Plants','Amphibians of Plant Kingdom','Seed Plants','Vascular Plants'], ans:1 },
   { q:'First stable product of Calvin cycle is:', opts:['OAA','PEP','PGA','RuBP'], ans:2 },
   { q:'Casparian strips occur in:', opts:['Cortex','Epidermis','Endodermis','Pericycle'], ans:2 },
-  { q:'Enzyme responsible for CO₂ fixation:', opts:['Catalase','ATPase','Rubisco','Amylase'], ans:2 },
+  { q:'Enzyme responsible for CO2 fixation:', opts:['Catalase','ATPase','Rubisco','Amylase'], ans:2 },
   { q:'Crossing over occurs during:', opts:['Leptotene','Zygotene','Pachytene','Diplotene'], ans:2 },
   { q:'Aleurone layer is rich in:', opts:['Lipids','Proteins','DNA','Cellulose'], ans:1 },
   { q:'Water potential of pure water is:', opts:['+1','-1','0','100'], ans:2 },
@@ -32,7 +30,6 @@ const questions = [
   { q:'Pleiotropy means:', opts:['One trait controlled by many genes','One gene controls many traits','Linked genes','Multiple alleles'], ans:1 },
 
   // ===== HUMAN BIOLOGY =====
-
   { q:'Functional unit of kidney:', opts:['Neuron','Nephron','Alveolus','Osteon'], ans:1 },
   { q:'Human heart has:', opts:['2 chambers','3 chambers','4 chambers','5 chambers'], ans:2 },
   { q:'Oxygen carrying pigment in blood:', opts:['Keratin','Hemoglobin','Melanin','Myosin'], ans:1 },
@@ -42,7 +39,7 @@ const questions = [
   { q:'Study of animals is:', opts:['Botany','Zoology','Ecology','Genetics'], ans:1 },
   { q:'Basic unit of life:', opts:['Tissue','Organ','Cell','Organ System'], ans:2 },
   { q:'Pacemaker of heart:', opts:['AV Node','SA Node','Bundle of His','Purkinje Fibres'], ans:1 },
-  { q:'Universal recipient blood group:', opts:['O−','A+','B+','AB+'], ans:3 },
+  { q:'Universal recipient blood group:', opts:['O-','A+','B+','AB+'], ans:3 },
   { q:'Site of fertilization in humans:', opts:['Ovary','Uterus','Fallopian Tube','Vagina'], ans:2 },
   { q:'Antibodies are produced by:', opts:['RBC','Platelets','Lymphocytes','Plasma'], ans:2 },
   { q:'Human sperm is:', opts:['Diploid','Haploid','Triploid','Tetraploid'], ans:1 },
@@ -58,79 +55,155 @@ const questions = [
   { q:'Rh factor was discovered by:', opts:['Watson','Mendel','Landsteiner & Wiener','Darwin'], ans:2 },
   { q:'Hormone that lowers blood calcium:', opts:['PTH','Calcitonin','Insulin','Adrenaline'], ans:1 },
   { q:'First heart sound is due to closure of:', opts:['Semilunar Valves','AV Valves','Aortic Valve','Pulmonary Valve'], ans:1 }
-
 ];
-
 
 let currentQuestion = 0;
 let selectedAnswers = [];
 let score = 0;
-
 let totalTime = 50 * 60;
 let timeLeft = totalTime;
 let timerInterval = null;
 
 // Elements
 const registerSection = document.getElementById("register");
-const quizSection = document.getElementById("quiz");
-const resultSection = document.getElementById("result");
-
-const startBtn = document.getElementById("startQuiz");
-const quizBox = document.getElementById("quizBox");
+const quizSection     = document.getElementById("quiz");
+const resultSection   = document.getElementById("result");
+const startBtn        = document.getElementById("startQuiz");
+const quizBox         = document.getElementById("quizBox");
 
 // ========================
-// START QUIZ
+// INLINE ERROR HELPER
 // ========================
 
-startBtn.addEventListener("click", () => {
+function showError(fieldId, errorId, message) {
+  const field = document.getElementById(fieldId);
+  const errorEl = document.getElementById(errorId);
+  if (errorEl) errorEl.textContent = message;
+  if (field) {
+    field.classList.add("input-error");
+    field.classList.remove("input-success");
+  }
+}
 
-    const name = document.getElementById("name").value.trim();
-    const mobile = document.getElementById("mobile").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const state = document.getElementById("state").value;
-    const neet = document.getElementById("neet").value;
+function clearError(fieldId, errorId) {
+  const field = document.getElementById(fieldId);
+  const errorEl = document.getElementById(errorId);
+  if (errorEl) errorEl.textContent = "";
+  if (field) {
+    field.classList.remove("input-error");
+    field.classList.add("input-success");
+  }
+}
 
-    if (name === "") {
-        alert("Please enter your Full Name.");
+// ========================
+// START QUIZ (single listener)
+// ========================
+
+startBtn.addEventListener("click", async () => {
+  const name      = document.getElementById("name").value.trim();
+  const mobile    = document.getElementById("mobile").value.trim();
+  const email     = document.getElementById("email").value.trim();
+  const state     = document.getElementById("state").value;
+  const neet      = document.getElementById("neet").value;
+
+  let valid = true;
+
+
+  if (name === "") {
+    showError("name", "nameError", "Please enter your full name.");
+    valid = false;
+  } else if (!/^[A-Za-z\s]+$/.test(name)) {
+    showError("name", "nameError", "Name must contain only letters and spaces.");
+    valid = false;
+  } else {
+    clearError("name", "nameError");
+  }
+
+  if (!/^[6-9]\d{9}$/.test(mobile)) {
+    showError("mobile", "mobileError", "Enter a valid 10-digit Indian mobile number.");
+    valid = false;
+  } else {
+    clearError("mobile", "mobileError");
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    showError("email", "emailError", "Enter a valid email address.");
+    valid = false;
+  } else {
+    clearError("email", "emailError");
+  }
+
+  if (state === "Select State") {
+    showError("state", "stateError", "Please select your state.");
+    valid = false;
+  } else {
+    clearError("state", "stateError");
+  }
+
+  if (!valid) return;
+
+  try {
+
+    const response = await fetch("http://localhost:5000/api/applications", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+            name,
+            mobile,
+            email,
+            state,
+            neet,
+            neetscore: document.getElementById("neetscore").value
+
+        })
+
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+        showError(
+            "name",
+            "nameError",
+            "Registration failed."
+        );
+
         return;
+
     }
 
-    if (!/^[A-Za-z ]+$/.test(name)) {
-        alert("Name should contain only letters.");
-        return;
-    }
+} catch (err) {
 
-    if (!/^[6-9]\d{9}$/.test(mobile)) {
-        alert("Enter a valid 10-digit Indian mobile number.");
-        return;
-    }
+    console.error(err);
 
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-        alert("Enter a valid email address.");
-        return;
-    }
+    showError(
+        "name",
+        "nameError",
+        "Cannot connect to backend."
+    );
 
-    if (state === "Select State") {
-        alert("Please select your state.");
-        return;
-    }
+    return;
 
-    if (questions.length === 0) {
-        alert("Questions not loaded.");
-        return;
-    }
+}
 
-    registerSection.style.display = "none";
-    quizSection.style.display = "block";
+  // All valid — start quiz
+  registerSection.style.display = "none";
+  quizSection.style.display     = "block";
 
-    currentQuestion = 0;
-    selectedAnswers = new Array(questions.length).fill(null);
-    score = 0;
-    timeLeft = totalTime;
+  currentQuestion  = 0;
+  selectedAnswers  = new Array(questions.length).fill(null);
+  score            = 0;
+  timeLeft         = totalTime;
 
-    startTimer();
-    renderQuestion();
-
+  startTimer();
+  renderQuestion();
 });
 
 // ========================
@@ -138,156 +211,95 @@ startBtn.addEventListener("click", () => {
 // ========================
 
 function startTimer() {
-
-    clearInterval(timerInterval);
-
-    timerInterval = setInterval(() => {
-
-        if (timeLeft <= 0) {
-
-            clearInterval(timerInterval);
-
-            finishQuiz();
-
-            return;
-
-        }
-
-        timeLeft--;
-
-        updateTimer();
-
-    },1000);
-
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      finishQuiz();
+      return;
+    }
+    timeLeft--;
+    updateTimer();
+  }, 1000);
 }
 
-function updateTimer(){
-
-    const timer=document.getElementById("timer");
-
-    if(!timer) return;
-
-    let minutes=Math.floor(timeLeft/60);
-
-    let seconds=timeLeft%60;
-
-    timer.innerHTML=
-
-    minutes.toString().padStart(2,"0")
-
-    +":"
-
-    +
-
-    seconds.toString().padStart(2,"0");
-
+function updateTimer() {
+  const timer = document.getElementById("timer");
+  if (!timer) return;
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  timer.innerHTML =
+    minutes.toString().padStart(2, "0") + ":" +
+    seconds.toString().padStart(2, "0");
 }
 
 // ========================
-// LOAD QUESTION
+// RENDER QUESTION
 // ========================
 
-function renderQuestion(){
+function renderQuestion() {
 
-    const q=questions[currentQuestion];
+    const q = questions[currentQuestion];
 
-    quizBox.innerHTML=`
+    quizBox.innerHTML = `
+        <div class="quiz-card">
 
-<div class="quiz-card">
+            <div class="quiz-header">
+                <h3>Question ${currentQuestion + 1} / ${questions.length}</h3>
 
-<div class="quiz-header">
+                <div id="timer" class="timer">
+                    00:00
+                </div>
+            </div>
 
-<div>
+            <div class="progress">
+                <div
+                    class="progress-fill"
+                    style="width:${((currentQuestion + 1) / questions.length) * 100}%">
+                </div>
+            </div>
 
-<h3>
+            <h2 class="question">
+                ${q.q}
+            </h2>
 
-Question ${currentQuestion+1}
+            <div id="options">
 
-/
+                ${q.opts.map((option,index)=>`
 
-${questions.length}
+                    <button
+                        class="option ${selectedAnswers[currentQuestion]===index ? "active" : ""}"
+                        onclick="selectAnswer(${index})">
 
-</h3>
+                        ${option}
 
-</div>
+                    </button>
 
-<div id="timer"
+                `).join("")}
 
-class="timer">
+            </div>
 
-00:00
+            <div class="quiz-buttons">
 
-</div>
+                <button
+                    class="btn"
+                    onclick="previousQuestion()"
+                    ${currentQuestion===0 ? "disabled" : ""}>
+                    Previous
+                </button>
 
-</div>
+                <button
+                    class="btn"
+                    onclick="nextQuestion()">
 
-<div class="progress">
+                    ${currentQuestion===questions.length-1 ? "Finish" : "Next"}
 
-<div
+                </button>
 
-class="progress-fill"
+            </div>
 
-style="width:${((currentQuestion+1)/questions.length)*100}%">
-
-</div>
-
-</div>
-
-<h2 class="question">
-
-${q.q}
-
-</h2>
-
-<div id="options">
-
-${q.opts.map((option,index)=>`
-
-<button
-
-class="option
-
-${selectedAnswers[currentQuestion]===index?'active':''}"
-
-onclick="selectAnswer(${index})">
-
-${option}
-
-</button>
-
-`).join("")}
-
-</div>
-
-<div class="quiz-buttons">
-
-<button
-
-class="btn"
-
-onclick="previousQuestion()"
-
-${currentQuestion===0?'disabled':''}>
-
-Previous
-
-</button>
-
-<button
-
-class="btn"
-
-onclick="nextQuestion()">
-
-${currentQuestion===questions.length-1?'Finish':'Next'}
-
-</button>
-
-</div>
-
-</div>
-
-`;
+        </div>
+    `;
 
     updateTimer();
 
@@ -297,180 +309,103 @@ ${currentQuestion===questions.length-1?'Finish':'Next'}
 // SELECT ANSWER
 // ========================
 
-function selectAnswer(answer){
-
-    selectedAnswers[currentQuestion]=answer;
-
-    renderQuestion();
-
+function selectAnswer(answer) {
+  selectedAnswers[currentQuestion] = answer;
+  renderQuestion();
 }
-// =====================================
-// PART 2 - NAVIGATION & RESULTS
-// =====================================
 
-// Next Question
+// ========================
+// NAVIGATION
+// ========================
+
 function nextQuestion() {
-
-    if (selectedAnswers[currentQuestion] == null) {
-
-        alert("Please select an answer before continuing.");
-
-        return;
-
+  if (selectedAnswers[currentQuestion] == null) {
+    // Show inline error inside quiz card instead of alert
+    const existing = document.getElementById("answerError");
+    if (!existing) {
+      const errMsg = document.createElement("p");
+      errMsg.id = "answerError";
+      errMsg.style.cssText = "color:red;font-size:13px;margin:6px 0 0;";
+      errMsg.textContent = "Please select an answer before continuing.";
+      document.getElementById("options").after(errMsg);
     }
+    return;
+  }
 
-    if (currentQuestion < questions.length - 1) {
-
-        currentQuestion++;
-
-        renderQuestion();
-
-    }
-
-    else {
-
-        finishQuiz();
-
-    }
-
+  if (currentQuestion < questions.length - 1) {
+    currentQuestion++;
+    renderQuestion();
+  } else {
+    finishQuiz();
+  }
 }
 
-// Previous Question
 function previousQuestion() {
-
-    if (currentQuestion > 0) {
-
-        currentQuestion--;
-
-        renderQuestion();
-
-    }
-
+  if (currentQuestion > 0) {
+    currentQuestion--;
+    renderQuestion();
+  }
 }
 
-// =====================================
-// CALCULATE RESULT
-// =====================================
+// ========================
+// FINISH & RESULTS
+// ========================
 
 function finishQuiz() {
+  clearInterval(timerInterval);
+  score = 0;
+  questions.forEach((q, index) => {
+    if (selectedAnswers[index] === q.ans) score++;
+  });
 
-    clearInterval(timerInterval);
+  quizSection.style.display  = "none";
+  resultSection.style.display = "block";
 
-    score = 0;
+  const percentage = Math.round((score / questions.length) * 100);
 
-    questions.forEach((q, index) => {
+  document.getElementById("scoreText").innerHTML  = score + " / " + questions.length;
+  document.getElementById("percentage").innerHTML = percentage + "%";
 
-        if (selectedAnswers[index] === q.ans) {
+  let remark = "";
+  if      (percentage >= 90) remark = "Trophy Excellent";
+  else if (percentage >= 75) remark = "Very Good";
+  else if (percentage >= 50) remark = "Good";
+  else                       remark = "Keep Practicing";
 
-            score++;
-
-        }
-
-    });
-
-    quizSection.style.display = "none";
-    resultSection.style.display = "block";
-
-    const percentage = Math.round((score / questions.length) * 100);
-
-    document.getElementById("scoreText").innerHTML =
-        score + " / " + questions.length;
-
-    document.getElementById("percentage").innerHTML =
-        percentage + "%";
-
-    let remark = "";
-
-    if (percentage >= 90) {
-
-        remark = "🏆 Excellent";
-
-    }
-
-    else if (percentage >= 75) {
-
-        remark = "🎉 Very Good";
-
-    }
-
-    else if (percentage >= 50) {
-
-        remark = "👍 Good";
-
-    }
-
-    else {
-
-        remark = "📘 Keep Practicing";
-
-    }
-
-    document.getElementById("remark").innerHTML = remark;
-
+  document.getElementById("remark").innerHTML = remark;
 }
 
-// =====================================
+// ========================
 // RESTART QUIZ
-// =====================================
+// ========================
 
 function restartQuiz() {
+  currentQuestion = 0;
+  score           = 0;
+  timeLeft        = totalTime;
+  selectedAnswers = new Array(questions.length).fill(null);
 
-    currentQuestion = 0;
+  resultSection.style.display = "none";
+  quizSection.style.display   = "block";
 
-    score = 0;
-
-    timeLeft = totalTime;
-
-    selectedAnswers = new Array(questions.length).fill(null);
-
-    resultSection.style.display = "none";
-
-    quizSection.style.display = "block";
-
-    startTimer();
-
-    renderQuestion();
-
+  startTimer();
+  renderQuestion();
 }
 
-// =====================================
-// APPLY NOW
-// =====================================
-
-const applyBtn = document.getElementById("applyBtn");
-
-if (applyBtn) {
-
-    applyBtn.addEventListener("click", () => {
-
-        alert(
-            "Thank you for your interest!\n\nOur admission counsellor will contact you shortly."
-        );
-
-    });
-
-}
-
-// =====================================
-// WHATSAPP
-// =====================================
+// ========================
+// WHATSAPP SHARE
+// ========================
 
 const whatsappBtn = document.getElementById("whatsappBtn");
-
 if (whatsappBtn) {
-
-    whatsappBtn.addEventListener("click", () => {
-
-        const percentage = Math.round((score / questions.length) * 100);
-
-        const message =
-
+  whatsappBtn.addEventListener("click", () => {
+    const percentage = Math.round((score / questions.length) * 100);
+    const message =
 `Hello Dr. Abi,
 
 My Biology Assessment Result
 
-Score : ${score}/${questions.length}
-
+Score      : ${score}/${questions.length}
 Percentage : ${percentage}%
 
 I am interested in MBBS admission at the International University of Kyrgyzstan.
@@ -478,17 +413,9 @@ I am interested in MBBS admission at the International University of Kyrgyzstan.
 Please contact me.
 
 Thank you.`;
-
-        window.open(
-
-"https://wa.me/919999999999?text=" +
-
-encodeURIComponent(message),
-
-"_blank"
-
-);
-
-    });
-
+    window.open(
+      "https://wa.me/919999999999?text=" + encodeURIComponent(message),
+      "_blank"
+    );
+  });
 }

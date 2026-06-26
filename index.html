@@ -355,13 +355,17 @@ Fill your details before starting the Biology Assessment.
 <div class="row">
 
 <div class="input-box">
-<label>Full Name</label>
-<input type="text" id="name" required>
+    <label>Full Name</label>
+    <input type="text" id="name">
+    <small class="error" id="nameError"></small>
+    <span id="nameError" style="color:red; font-size:12px;"></span>
 </div>
 
 <div class="input-box">
-<label>Mobile Number</label>
-<input type="tel" id="mobile" required>
+    <label>Mobile Number</label>
+    <input type="tel" id="mobile">
+    <small class="error" id="mobileError"></small>
+    <span id="mobileError" style="color:red; font-size:12px;"></span>
 </div>
 
 </div>
@@ -369,10 +373,14 @@ Fill your details before starting the Biology Assessment.
 <div class="row">
 
 <div class="input-box">
-<label>Email Address</label>
-<input type="email" id="email" required>
+    <label>Email Address</label>
+    <input type="email" id="email">
+    <small class="error" id="emailError"></small>
+    <span id="emailError" style="color:red; font-size:12px;"></span>
+
 </div>
 
+<div class="input-box">
 <div class="input-box">
 <label>State</label>
 
@@ -395,6 +403,9 @@ Fill your details before starting the Biology Assessment.
 <option>Other</option>
 
 </select>
+
+<small class="error" id="stateError"></small>
+<span id="stateError" style="color:red; font-size:12px;"></span>
 
 </div>
 
