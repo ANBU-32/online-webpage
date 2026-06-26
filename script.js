@@ -143,60 +143,49 @@ startBtn.addEventListener("click", async () => {
   if (!valid) return;
 
   try {
+  const API_URL = "https://online-webpage-mqpl.onrender.com/api";
 
-    const API_URL = "https://online-webpage-mqpl.onrender.com/api";
+  // Show loading state on button
+  startBtn.disabled = true;
+  startBtn.textContent = "Connecting... please wait";
 
-const response = await fetch(`${API_URL}/applications`, {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000); // 30s
 
-        method: "POST",
+  const response = await fetch(`${API_URL}/applications`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name, mobile, email, state, neet,
+      neetscore: document.getElementById("neetscore").value
+    }),
+    signal: controller.signal
+  });
 
-        headers: {
-            "Content-Type": "application/json"
-        },
+  clearTimeout(timeout);
 
-        body: JSON.stringify({
+  const data = await response.json();
+  console.log("Status:", response.status);
+  console.log("Response:", data);
 
-            name,
-            mobile,
-            email,
-            state,
-            neet,
-            neetscore: document.getElementById("neetscore").value
-
-        })
-
-    });
-
-    console.log("Status:", response.status);
-
-const data = await response.json();
-
-console.log("Response:", data);
-
-if (!data.success) {
-
-    showError(
-        "name",
-        "nameError",
-        data.message
-    );
-
+  if (!data.success) {
+    showError("name", "nameError", data.message);
+    startBtn.disabled = false;
+    startBtn.textContent = "Start Biology Assessment";
     return;
-
-}
+  }
 
 } catch (err) {
+  console.error("Fetch Error:", err);
+  startBtn.disabled = false;
+  startBtn.textContent = "Start Biology Assessment";
 
-    console.error("Fetch Error:", err);
-
-    showError(
-        "name",
-        "nameError",
-        "Cannot connect to backend."
-    );
-
-    return;
-
+  if (err.name === "AbortError") {
+    showError("name", "nameError", "Server is waking up. Please wait 30 seconds and try again.");
+  } else {
+    showError("name", "nameError", "Cannot connect. Check your internet connection.");
+  }
+  return;
 }
 
   // All valid — start quiz
