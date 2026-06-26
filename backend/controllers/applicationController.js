@@ -72,6 +72,42 @@ const fullName = name?.trim();
 const userEmail = email?.trim().toLowerCase();
 const userMobile = mobile?.trim();
 
+// Validation
+if (!fullName || !/^[A-Za-z\s]{2,50}$/.test(fullName)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid name."
+    });
+}
+
+if (!/^[6-9]\d{9}$/.test(userMobile)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid mobile number."
+    });
+}
+
+if (!/^\S+@\S+\.\S+$/.test(userEmail)) {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid email address."
+    });
+}
+
+if (!state || state === "Select State") {
+    return res.status(400).json({
+        success: false,
+        message: "Please select a valid state."
+    });
+}
+
+if (neet !== "Yes" && neet !== "No") {
+    return res.status(400).json({
+        success: false,
+        message: "Invalid NEET selection."
+    });
+}
+
 const emailExists = await pool.query(
     "SELECT id FROM applications WHERE email = $1",
     [userEmail]
