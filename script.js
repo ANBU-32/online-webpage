@@ -144,9 +144,9 @@ startBtn.addEventListener("click", async () => {
 
   try {
 
-    const API_URL = "https://online-webpage-mqpl.onrender.com/api/applications";
+    const API_URL = "https://online-webpage-mqpl.onrender.com/api";
 
-fetch(`${API_URL}/applications`,{ 
+const response = await fetch(`${API_URL}/applications`, {
 
         method: "POST",
 
