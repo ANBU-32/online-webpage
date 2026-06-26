@@ -1,4 +1,6 @@
-if (localStorage.getItem("adminLoggedIn") !== "true") {
+const token = localStorage.getItem("token");
+
+if (!token) {
     window.location.href = "login.html";
 }
 
@@ -6,7 +8,14 @@ let allStudents = [];
 
 async function loadStudents() {
     try {
-        const response = await fetch("http://localhost:5000/api/applications");
+        const response = await fetch(
+    "https://YOUR-BACKEND.onrender.com/api/applications",
+    {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }
+);
         const result = await response.json();
 
         if (!result.success) {
@@ -56,9 +65,6 @@ function viewStudent(id) {
 loadStudents();
 
 
-function viewStudent(id) {
-    window.location.href = `student-details.html?id=${id}`;
-}
 
 document.getElementById("searchInput").addEventListener("keyup", function () {
 
@@ -78,6 +84,7 @@ document.getElementById("logoutBtn").addEventListener("click", function (e) {
     e.preventDefault();
 
     localStorage.removeItem("adminLoggedIn");
+localStorage.removeItem("token");
 
     window.location.href = "login.html";
 });

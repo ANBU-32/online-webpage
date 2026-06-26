@@ -53,18 +53,49 @@ const getApplications = async (req, res) => {
     }
 };
 
+
+
 const createApplication = async (req, res) => {
 
     try {
 
         const {
-            name,
-            mobile,
-            email,
-            state,
-            neet,
-            neetscore
-        } = req.body;
+    name,
+    mobile,
+    email,
+    state,
+    neet,
+    neetscore
+} = req.body;
+
+const fullName = name?.trim();
+const userEmail = email?.trim().toLowerCase();
+const userMobile = mobile?.trim();
+
+const emailExists = await pool.query(
+    "SELECT id FROM applications WHERE email = $1",
+    [userEmail]
+);
+
+if (emailExists.rows.length > 0) {
+    return res.status(409).json({
+        success: false,
+        message: "Email already registered."
+    });
+}
+
+const mobileExists = await pool.query(
+    "SELECT id FROM applications WHERE mobile = $1",
+    [userMobile]
+);
+
+if (mobileExists.rows.length > 0) {
+    return res.status(409).json({
+        success: false,
+        message: "Mobile already registered."
+    });
+}
+
 
         const result = await pool.query(
             `INSERT INTO applications
@@ -72,13 +103,13 @@ const createApplication = async (req, res) => {
             VALUES ($1,$2,$3,$4,$5,$6)
             RETURNING *`,
             [
-                name,
-                mobile,
-                email,
-                state,
-                neet,
-                neetscore
-            ]
+    fullName,
+    userMobile,
+    userEmail,
+    state,
+    neet,
+    neetscore || null
+]
         );
 
         res.status(201).json({
@@ -93,7 +124,7 @@ const createApplication = async (req, res) => {
 
         res.status(500).json({
             success:false,
-            message:error.message
+            message:"Internal Server Error"
         });
 
     }
@@ -152,7 +183,7 @@ const updateApplication = async (req, res) => {
         console.error(error);
         res.status(500).json({
             success: false,
-            message: "Server Error"
+            message:"Internal Server Error"
         });
     }
 };

@@ -2,13 +2,13 @@ const loginForm = document.getElementById("loginForm");
 const message = document.getElementById("message");
 
 loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    localStorage.removeItem("token");
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
     try {
-        const response = await fetch("http://localhost:5000/api/admin/login", {
+        fetch("https://YOUR-BACKEND.onrender.com/api/admin/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -21,9 +21,12 @@ loginForm.addEventListener("submit", async (e) => {
 
         const data = await response.json();
 
-        if (data.success) {
+      if (data.success) {
 
     localStorage.setItem("adminLoggedIn", "true");
+
+    // Save JWT token
+    localStorage.setItem("token", data.token);
 
     message.style.color = "green";
     message.textContent = "Login Successful!";
@@ -31,7 +34,9 @@ loginForm.addEventListener("submit", async (e) => {
     setTimeout(() => {
         window.location.href = "dashboard.html";
     }, 1000);
-}  
+
+}
+
         else {
             message.style.color = "red";
             message.textContent = data.message;

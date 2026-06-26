@@ -1,3 +1,5 @@
+const verifyAdmin = require("../middleware/authMiddleware");
+
 const express = require("express");
 const router = express.Router();
 
@@ -7,11 +9,11 @@ const {
     updateApplication,
     createApplication
 } = require("../controllers/applicationController");
-router.get("/", getApplications);
+router.get("/", verifyAdmin, getApplications);
 
-router.get("/:id", getApplicationById);
+router.get("/:id", verifyAdmin, getApplicationById);
 
-router.put("/:id", updateApplication);
+router.put("/:id", verifyAdmin, updateApplication);
 
 router.post("/", createApplication);
 
