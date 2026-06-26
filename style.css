@@ -61,16 +61,6 @@ header .container{
     flex:1;
 }
 
-.logo{
-
-display:flex;
-
-align-items:center;
-
-gap:15px;
-
-}
-
 
 .logo{
     display:flex;
@@ -486,7 +476,14 @@ transition:.3s;
 border-color:#0057b8;
 
 box-shadow:0 0 0 4px rgba(0,87,184,.15);
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
 
+select:focus-visible{
+outline:3px solid #0057b8;
+outline-offset:2px;
 }
 
 /* ==========================================
@@ -1076,5 +1073,14 @@ footer{
     padding:8px 15px;
 }
 
-   }
+}
+img{
+max-width:100%;
+height:auto;
+display:block;
+}
+body{
 
+overflow-wrap:break-word;
+
+}

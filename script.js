@@ -144,7 +144,9 @@ startBtn.addEventListener("click", async () => {
 
   try {
 
-    const response = await fetch("http://localhost:5000/api/applications", {
+    const API_URL = "https://your-backend-url.com/api";
+
+fetch(`${API_URL}/applications`,{ 
 
         method: "POST",
 
