@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBBS-IUK Admin Dashboard</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+    <h1>MBBS-IUK Admin Dashboard</h1>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Total Students</h3>
+            <h2 id="totalStudents">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Pending</h3>
+            <h2 id="pendingStudents">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Approved</h3>
+            <h2 id="approvedStudents">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Rejected</h3>
+            <h2 id="rejectedStudents">0</h2>
+        </div>
+
+    </div>
+
+    <h2>Student List</h2>
+
+    <table border="1" width="100%" cellspacing="0" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody id="studentTable">
+
+        </tbody>
+
+    </table>
+
+    <script src="js/dashboard.js"></script>
+
+</body>
+</html>

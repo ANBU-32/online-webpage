@@ -13,10 +13,12 @@ const pool = require("./config/db");
 
 // Import routes
 const applicationRoutes = require("./routes/applicationRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 app.use(express.json());
 
 app.use("/api/applications", applicationRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
     res.send("Welcome to MBBS IUK Backend 🚀");
