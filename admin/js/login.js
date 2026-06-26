@@ -22,15 +22,17 @@ loginForm.addEventListener("submit", async (e) => {
         const data = await response.json();
 
         if (data.success) {
-            message.style.color = "green";
-            message.textContent = "Login Successful!";
 
-            // Redirect after 1 second
-            setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 1000);
+    localStorage.setItem("adminLoggedIn", "true");
 
-        } else {
+    message.style.color = "green";
+    message.textContent = "Login Successful!";
+
+    setTimeout(() => {
+        window.location.href = "dashboard.html";
+    }, 1000);
+}  
+        else {
             message.style.color = "red";
             message.textContent = data.message;
         }

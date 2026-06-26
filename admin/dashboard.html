@@ -8,51 +8,72 @@
 </head>
 <body>
 
-    <h1>MBBS-IUK Admin Dashboard</h1>
+<div class="container">
 
-    <div class="cards">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h2>MBBS-IUK</h2>
 
-        <div class="card">
-            <h3>Total Students</h3>
-            <h2 id="totalStudents">0</h2>
+        <ul>
+            <li><a href="dashboard.html">📊 Dashboard</a></li>
+            <li><a href="dashboard.html">👨‍🎓 Students</a></li>
+           <li> <a href="#" id="logoutBtn">🚪 Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+
+        <header>
+            <h1>Admin Dashboard</h1>
+        </header>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Students</h3>
+                <h2 id="totalStudents">0</h2>
+            </div>
+
         </div>
 
-        <div class="card">
-            <h3>Pending</h3>
-            <h2 id="pendingStudents">0</h2>
+        <div class="table-container">
+
+            <h2>Student List</h2>
+
+            <div class="search-box">
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by name, mobile or email..."
+    >
+</div>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="studentTable">
+
+                </tbody>
+
+            </table>
+
         </div>
 
-        <div class="card">
-            <h3>Approved</h3>
-            <h2 id="approvedStudents">0</h2>
-        </div>
+    </main>
 
-        <div class="card">
-            <h3>Rejected</h3>
-            <h2 id="rejectedStudents">0</h2>
-        </div>
+</div>
 
-    </div>
-
-    <h2>Student List</h2>
-
-    <table border="1" width="100%" cellspacing="0" cellpadding="10">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Email</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-
-        <tbody id="studentTable">
-
-        </tbody>
-
-    </table>
-
-    <script src="js/dashboard.js"></script>
+<script src="js/dashboard.js"></script>
 
 </body>
 </html>

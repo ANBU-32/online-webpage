@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Student</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+    <h1>Edit Student</h1>
+
+    <form id="editForm">
+
+        <label>Full Name</label><br>
+        <input type="text" id="full_name" required><br><br>
+
+        <label>Mobile</label><br>
+        <input type="text" id="mobile" required><br><br>
+
+        <label>Email</label><br>
+        <input type="email" id="email" required><br><br>
+
+        <label>State</label><br>
+        <input type="text" id="state" required><br><br>
+
+        <label>NEET Qualified</label><br>
+        <select id="neet_qualified">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br><br>
+
+        <label>NEET Score</label><br>
+        <input type="number" id="neet_score"><br><br>
+
+        <button type="submit">Update Student</button>
+
+    </form>
+
+    <br>
+
+    <a href="dashboard.html">← Back to Dashboard</a>
+
+    <script src="js/edit-student.js"></script>
+
+</body>
+</html>
