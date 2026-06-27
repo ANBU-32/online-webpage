@@ -1,3 +1,4 @@
+console.log("SCRIPT VERSION 27-JUN-2026 3:00 PM");
 // =====================================
 // MBBS BIOLOGY QUIZ ENGINE
 // =====================================
