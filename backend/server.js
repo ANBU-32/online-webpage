@@ -66,7 +66,10 @@ app.get("/", (req, res) => {
 // ==========================
 
 pool.connect()
-    .then(() => console.log("✅ PostgreSQL Connected"))
+    .then(client => {
+        console.log("✅ PostgreSQL Connected");
+        client.release();
+    })
     .catch(err => {
         console.error("❌ Database Error");
         console.error(err);

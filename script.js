@@ -1,6 +1,77 @@
 // =====================================
 // MBBS BIOLOGY QUIZ ENGINE
 // =====================================
+
+// ========================
+// BACKEND CONFIG
+// ========================
+
+const API_CONFIG = {
+  // Auto-detect: use localhost when running locally, production otherwise
+  BASE_URL: (() => {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return "http://localhost:3000/api";          // Local dev server
+    }
+    return "https://online-webpage-mqpl.onrender.com/api"; // Production
+  })(),
+
+  TIMEOUT_MS: 35000,   // 35s — enough for Render cold-start (~30s)
+  MAX_RETRIES: 2,      // Retry once on network failure
+};
+
+// ========================
+// CORE FETCH HELPER
+// ========================
+
+async function apiFetch(endpoint, options = {}, retries = API_CONFIG.MAX_RETRIES) {
+  const url = `${API_CONFIG.BASE_URL}${endpoint}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      ...options,
+    });
+    clearTimeout(timer);
+
+    // Parse JSON safely
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch { data = { success: false, message: "Invalid server response." }; }
+
+    return { ok: response.ok, status: response.status, data };
+
+  } catch (err) {
+    clearTimeout(timer);
+
+    if (err.name === "AbortError") {
+      return {
+        ok: false, status: 0,
+        data: { success: false, message: "Server is waking up. Please wait 30 seconds and try again." }
+      };
+    }
+
+    // Retry on network errors (not timeouts)
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, 2000)); // wait 2s before retry
+      return apiFetch(endpoint, options, retries - 1);
+    }
+
+    return {
+      ok: false, status: 0,
+      data: { success: false, message: "Cannot connect. Check your internet connection." }
+    };
+  }
+}
+
+// =====================================
+// QUESTIONS
+// =====================================
+
 const questions = [
   // ===== PLANT BIOLOGY =====
   { q:'Photosynthesis occurs in:', opts:['Nucleus','Chloroplast','Ribosome','Vacuole'], ans:1 },
@@ -57,6 +128,7 @@ const questions = [
   { q:'First heart sound is due to closure of:', opts:['Semilunar Valves','AV Valves','Aortic Valve','Pulmonary Valve'], ans:1 }
 ];
 
+<<<<<<< HEAD
 // ======================================
 // MBBS Biology Quiz
 // Part 1 - Registration & Quiz Start
@@ -139,11 +211,91 @@ startBtn.addEventListener("click", async (e) => {
     const neetscore = document.getElementById("neetscore").value.trim();
 
     let valid = true;
+=======
+// =====================================
+// STATE
+// =====================================
+
+let currentQuestion = 0;
+let selectedAnswers = [];
+let score           = 0;
+let totalTime       = 50 * 60;
+let timeLeft        = totalTime;
+let timerInterval   = null;
+
+// Store registration data for result submission
+let registrantData  = {};
+
+// ========================
+// DOM ELEMENTS
+// ========================
+
+const registerSection = document.getElementById("register");
+const quizSection     = document.getElementById("quiz");
+const resultSection   = document.getElementById("result");
+const startBtn        = document.getElementById("startQuiz");
+const quizBox         = document.getElementById("quizBox");
+
+// ========================
+// INLINE ERROR HELPERS
+// ========================
+
+function showError(fieldId, errorId, message) {
+  const field   = document.getElementById(fieldId);
+  const errorEl = document.getElementById(errorId);
+  if (errorEl) errorEl.textContent = message;
+  if (field) {
+    field.classList.add("input-error");
+    field.classList.remove("input-success");
+  }
+}
+
+function clearError(fieldId, errorId) {
+  const field   = document.getElementById(fieldId);
+  const errorEl = document.getElementById(errorId);
+  if (errorEl) errorEl.textContent = "";
+  if (field) {
+    field.classList.remove("input-error");
+    field.classList.add("input-success");
+  }
+}
+
+function setButtonState(btn, loading, label) {
+  btn.disabled     = loading;
+  btn.textContent  = loading ? "Connecting… please wait" : label;
+}
+
+// ========================
+// REGISTRATION → START
+// ========================
+
+startBtn.addEventListener("click", async () => {
+  const name     = document.getElementById("name").value.trim();
+  const mobile   = document.getElementById("mobile").value.trim();
+  const email    = document.getElementById("email").value.trim();
+  const state    = document.getElementById("state").value;
+  const neet     = document.getElementById("neet").value;
+  const neetscore = document.getElementById("neetscore")?.value ?? "";
+
+  // ---- Validation ----
+  let valid = true;
+
+  if (name === "") {
+    showError("name", "nameError", "Please enter your full name.");
+    valid = false;
+  } else if (!/^[A-Za-z\s]+$/.test(name)) {
+    showError("name", "nameError", "Name must contain only letters and spaces.");
+    valid = false;
+  } else {
+    clearError("name", "nameError");
+  }
+>>>>>>> b80cab2975f6e88991174b22e59c5887ca76c886
 
     // -----------------------
     // Name
     // -----------------------
 
+<<<<<<< HEAD
     if (name === "") {
 
         showError(
@@ -299,6 +451,50 @@ startBtn.addEventListener("click", async (e) => {
         );
 
     }
+=======
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    showError("email", "emailError", "Enter a valid email address.");
+    valid = false;
+  } else {
+    clearError("email", "emailError");
+  }
+
+  if (!state || state === "Select State") {
+    showError("state", "stateError", "Please select your state.");
+    valid = false;
+  } else {
+    clearError("state", "stateError");
+  }
+
+  if (!valid) return;
+
+  // ---- Submit to backend ----
+  setButtonState(startBtn, true, "Start Biology Assessment");
+
+  const { ok, data } = await apiFetch("/applications", {
+    method: "POST",
+    body: JSON.stringify({ name, mobile, email, state, neet, neetscore }),
+  });
+
+  if (!ok || !data.success) {
+    showError("name", "nameError", data.message || "Something went wrong. Please try again.");
+    setButtonState(startBtn, false, "Start Biology Assessment");
+    return;
+  }
+
+  // Save for result submission later
+  registrantData = { name, mobile, email, state, neet, neetscore };
+
+  // ---- Start quiz ----
+  setButtonState(startBtn, false, "Start Biology Assessment");
+  registerSection.style.display = "none";
+  quizSection.style.display     = "block";
+
+  currentQuestion = 0;
+  selectedAnswers = new Array(questions.length).fill(null);
+  score           = 0;
+  timeLeft        = totalTime;
+>>>>>>> b80cab2975f6e88991174b22e59c5887ca76c886
 
 });
 
@@ -335,6 +531,7 @@ function startTimer() {
 }
 
 function updateTimer() {
+<<<<<<< HEAD
 
     const timer = document.getElementById("timer");
 
@@ -348,6 +545,13 @@ function updateTimer() {
         ":" +
         String(seconds).padStart(2, "0");
 
+=======
+  const timer = document.getElementById("timer");
+  if (!timer) return;
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, "0");
+  const s = (timeLeft % 60).toString().padStart(2, "0");
+  timer.textContent = `${m}:${s}`;
+>>>>>>> b80cab2975f6e88991174b22e59c5887ca76c886
 }
 
 // -------------------------------
@@ -355,7 +559,9 @@ function updateTimer() {
 // -------------------------------
 
 function renderQuestion() {
+  const q = questions[currentQuestion];
 
+<<<<<<< HEAD
     const q = questions[currentQuestion];
 
     quizBox.innerHTML = `
@@ -433,7 +639,41 @@ function renderQuestion() {
     `;
 
     updateTimer();
+=======
+  quizBox.innerHTML = `
+    <div class="quiz-card">
+      <div class="quiz-header">
+        <h3>Question ${currentQuestion + 1} / ${questions.length}</h3>
+        <div id="timer" class="timer">00:00</div>
+      </div>
+      <div class="progress">
+        <div class="progress-fill"
+             style="width:${((currentQuestion + 1) / questions.length) * 100}%">
+        </div>
+      </div>
+      <h2 class="question">${q.q}</h2>
+      <div id="options">
+        ${q.opts.map((opt, i) => `
+          <button
+            class="option ${selectedAnswers[currentQuestion] === i ? "active" : ""}"
+            onclick="selectAnswer(${i})">
+            ${opt}
+          </button>
+        `).join("")}
+      </div>
+      <div class="quiz-buttons">
+        <button class="btn" onclick="previousQuestion()" ${currentQuestion === 0 ? "disabled" : ""}>
+          Previous
+        </button>
+        <button class="btn" onclick="nextQuestion()">
+          ${currentQuestion === questions.length - 1 ? "Finish" : "Next"}
+        </button>
+      </div>
+    </div>
+  `;
+>>>>>>> b80cab2975f6e88991174b22e59c5887ca76c886
 
+  updateTimer();
 }
 
 // -------------------------------
@@ -457,6 +697,20 @@ function selectAnswer(index) {
 // -------------------------------
 
 function nextQuestion() {
+<<<<<<< HEAD
+=======
+  if (selectedAnswers[currentQuestion] == null) {
+    const existing = document.getElementById("answerError");
+    if (!existing) {
+      const errMsg = document.createElement("p");
+      errMsg.id = "answerError";
+      errMsg.style.cssText = "color:red;font-size:13px;margin:6px 0 0;";
+      errMsg.textContent   = "Please select an answer before continuing.";
+      document.getElementById("options").after(errMsg);
+    }
+    return;
+  }
+>>>>>>> b80cab2975f6e88991174b22e59c5887ca76c886
 
     if (selectedAnswers[currentQuestion] === null) {
 
@@ -527,6 +781,7 @@ function previousQuestion() {
 // Finish Quiz
 // -------------------------------
 
+<<<<<<< HEAD
 function finishQuiz() {
 
     clearInterval(timerInterval);
@@ -586,6 +841,49 @@ function finishQuiz() {
     document.getElementById("remark").textContent =
         remark;
 
+=======
+async function finishQuiz() {
+  clearInterval(timerInterval);
+
+  score = 0;
+  questions.forEach((q, i) => {
+    if (selectedAnswers[i] === q.ans) score++;
+  });
+
+  const percentage  = Math.round((score / questions.length) * 100);
+  const timeTaken   = totalTime - timeLeft; // seconds used
+
+  // Submit result to backend (non-blocking — don't wait to show results)
+  apiFetch("/results", {
+    method: "POST",
+    body: JSON.stringify({
+      ...registrantData,
+      score,
+      total:      questions.length,
+      percentage,
+      timeTaken,
+      submittedAt: new Date().toISOString(),
+    }),
+  }).then(({ ok, data }) => {
+    if (!ok) console.warn("Result submission failed:", data.message);
+    else     console.log("Result saved:", data);
+  });
+
+  // Show results
+  quizSection.style.display   = "none";
+  resultSection.style.display = "block";
+
+  document.getElementById("scoreText").textContent  = `${score} / ${questions.length}`;
+  document.getElementById("percentage").textContent = `${percentage}%`;
+
+  let remark = "";
+  if      (percentage >= 90) remark = "🏆 Excellent";
+  else if (percentage >= 75) remark = "⭐ Very Good";
+  else if (percentage >= 50) remark = "👍 Good";
+  else                       remark = "📚 Keep Practicing";
+
+  document.getElementById("remark").textContent = remark;
+>>>>>>> b80cab2975f6e88991174b22e59c5887ca76c886
 }
 
 // -------------------------------
@@ -656,6 +954,7 @@ International University of Kyrgyzstan.
 Please contact me.
 
 Thank you.`;
+<<<<<<< HEAD
 
         const phone = "919999999999"; // Replace with your WhatsApp number
 
@@ -686,3 +985,11 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("MBBS Biology Quiz Loaded Successfully");
 
 });
+=======
+    window.open(
+      "https://wa.me/919999999999?text=" + encodeURIComponent(message),
+      "_blank"
+    );
+  });
+}
+>>>>>>> b80cab2975f6e88991174b22e59c5887ca76c886
