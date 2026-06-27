@@ -129,8 +129,6 @@ const questions = [
 ];
 
 
-const API_URL = "https://online-webpage-mqpl.onrender.com";
-
 // -------------------------------
 // Global Variables
 // -------------------------------
@@ -296,9 +294,7 @@ startBtn.addEventListener("click", async (e) => {
 
     try {
 
-        const response = await
-        console.log("API_URL =", API_URL);
-        fetch(API_URL, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/applications`, {
 
             method: "POST",
 
