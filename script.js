@@ -1,4 +1,3 @@
-console.log("SCRIPT VERSION 27-JUN-2026 3:00 PM");
 // =====================================
 // MBBS BIOLOGY QUIZ ENGINE
 // =====================================
@@ -14,7 +13,7 @@ const API_CONFIG = {
     if (host === "localhost" || host === "127.0.0.1") {
       return "http://localhost:3000/api";          // Local dev server
     }
-    return "https://online-webpage-mqpl.onrender.com/api"; // Production
+    return "https://online-webpage-7yxo.onrender.com"; // Production
   })(),
 
   TIMEOUT_MS: 35000,   // 35s — enough for Render cold-start (~30s)
@@ -130,7 +129,7 @@ const questions = [
 ];
 
 
-const API_URL = "https://online-webpage-mqpl.onrender.com";
+const API_URL = "https://online-webpage-7yxo.onrender.com";
 
 // -------------------------------
 // Global Variables

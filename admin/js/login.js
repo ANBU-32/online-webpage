@@ -7,7 +7,7 @@ loginForm.addEventListener("submit", async (e) => {
     const password = document.getElementById("password").value.trim();
 
     try {
-        const response = await fetch("https://online-webpage-mqpl.onrender.com/api/admin/login", {
+        const response = await fetch("const API_URL = https://online-webpage-7yxo.onrender.com/api/admin/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

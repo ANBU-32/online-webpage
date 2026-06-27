@@ -8,7 +8,7 @@ let allStudents = [];
 
 async function loadStudents() {
     try {
-        const response = await fetch("https://online-webpage-mqpl.onrender.com/api/applications");
+        const response = await fetch("fetch(https://online-webpage-7yxo.onrender.com/api/applications");
     {
         headers: {
             Authorization: `Bearer ${token}`
