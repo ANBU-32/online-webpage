@@ -679,18 +679,6 @@ function restartQuiz() {
 // ======================================
 
 // -------------------------------
-// Restart Button
-// -------------------------------
-
-const restartBtn = document.getElementById("restartBtn");
-
-if (restartBtn) {
-
-    restartBtn.addEventListener("click", restartQuiz);
-
-}
-
-// -------------------------------
 // WhatsApp Share
 // -------------------------------
 
