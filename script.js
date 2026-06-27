@@ -1,6 +1,77 @@
 // =====================================
 // MBBS BIOLOGY QUIZ ENGINE
 // =====================================
+
+// ========================
+// BACKEND CONFIG
+// ========================
+
+const API_CONFIG = {
+  // Auto-detect: use localhost when running locally, production otherwise
+  BASE_URL: (() => {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return "http://localhost:3000/api";          // Local dev server
+    }
+    return "https://online-webpage-mqpl.onrender.com/api"; // Production
+  })(),
+
+  TIMEOUT_MS: 35000,   // 35s — enough for Render cold-start (~30s)
+  MAX_RETRIES: 2,      // Retry once on network failure
+};
+
+// ========================
+// CORE FETCH HELPER
+// ========================
+
+async function apiFetch(endpoint, options = {}, retries = API_CONFIG.MAX_RETRIES) {
+  const url = `${API_CONFIG.BASE_URL}${endpoint}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      ...options,
+    });
+    clearTimeout(timer);
+
+    // Parse JSON safely
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch { data = { success: false, message: "Invalid server response." }; }
+
+    return { ok: response.ok, status: response.status, data };
+
+  } catch (err) {
+    clearTimeout(timer);
+
+    if (err.name === "AbortError") {
+      return {
+        ok: false, status: 0,
+        data: { success: false, message: "Server is waking up. Please wait 30 seconds and try again." }
+      };
+    }
+
+    // Retry on network errors (not timeouts)
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, 2000)); // wait 2s before retry
+      return apiFetch(endpoint, options, retries - 1);
+    }
+
+    return {
+      ok: false, status: 0,
+      data: { success: false, message: "Cannot connect. Check your internet connection." }
+    };
+  }
+}
+
+// =====================================
+// QUESTIONS
+// =====================================
+
 const questions = [
   // ===== PLANT BIOLOGY =====
   { q:'Photosynthesis occurs in:', opts:['Nucleus','Chloroplast','Ribosome','Vacuole'], ans:1 },
@@ -57,14 +128,24 @@ const questions = [
   { q:'First heart sound is due to closure of:', opts:['Semilunar Valves','AV Valves','Aortic Valve','Pulmonary Valve'], ans:1 }
 ];
 
+// =====================================
+// STATE
+// =====================================
+
 let currentQuestion = 0;
 let selectedAnswers = [];
-let score = 0;
-let totalTime = 50 * 60;
-let timeLeft = totalTime;
-let timerInterval = null;
+let score           = 0;
+let totalTime       = 50 * 60;
+let timeLeft        = totalTime;
+let timerInterval   = null;
 
-// Elements
+// Store registration data for result submission
+let registrantData  = {};
+
+// ========================
+// DOM ELEMENTS
+// ========================
+
 const registerSection = document.getElementById("register");
 const quizSection     = document.getElementById("quiz");
 const resultSection   = document.getElementById("result");
@@ -72,11 +153,11 @@ const startBtn        = document.getElementById("startQuiz");
 const quizBox         = document.getElementById("quizBox");
 
 // ========================
-// INLINE ERROR HELPER
+// INLINE ERROR HELPERS
 // ========================
 
 function showError(fieldId, errorId, message) {
-  const field = document.getElementById(fieldId);
+  const field   = document.getElementById(fieldId);
   const errorEl = document.getElementById(errorId);
   if (errorEl) errorEl.textContent = message;
   if (field) {
@@ -86,7 +167,7 @@ function showError(fieldId, errorId, message) {
 }
 
 function clearError(fieldId, errorId) {
-  const field = document.getElementById(fieldId);
+  const field   = document.getElementById(fieldId);
   const errorEl = document.getElementById(errorId);
   if (errorEl) errorEl.textContent = "";
   if (field) {
@@ -95,19 +176,25 @@ function clearError(fieldId, errorId) {
   }
 }
 
+function setButtonState(btn, loading, label) {
+  btn.disabled     = loading;
+  btn.textContent  = loading ? "Connecting… please wait" : label;
+}
+
 // ========================
-// START QUIZ (single listener)
+// REGISTRATION → START
 // ========================
 
 startBtn.addEventListener("click", async () => {
-  const name      = document.getElementById("name").value.trim();
-  const mobile    = document.getElementById("mobile").value.trim();
-  const email     = document.getElementById("email").value.trim();
-  const state     = document.getElementById("state").value;
-  const neet      = document.getElementById("neet").value;
+  const name     = document.getElementById("name").value.trim();
+  const mobile   = document.getElementById("mobile").value.trim();
+  const email    = document.getElementById("email").value.trim();
+  const state    = document.getElementById("state").value;
+  const neet     = document.getElementById("neet").value;
+  const neetscore = document.getElementById("neetscore")?.value ?? "";
 
+  // ---- Validation ----
   let valid = true;
-
 
   if (name === "") {
     showError("name", "nameError", "Please enter your full name.");
@@ -133,7 +220,7 @@ startBtn.addEventListener("click", async () => {
     clearError("email", "emailError");
   }
 
-  if (state === "Select State") {
+  if (!state || state === "Select State") {
     showError("state", "stateError", "Please select your state.");
     valid = false;
   } else {
@@ -142,60 +229,32 @@ startBtn.addEventListener("click", async () => {
 
   if (!valid) return;
 
-  try {
-  const API_URL = "https://online-webpage-mqpl.onrender.com/api";
+  // ---- Submit to backend ----
+  setButtonState(startBtn, true, "Start Biology Assessment");
 
-  // Show loading state on button
-  startBtn.disabled = true;
-  startBtn.textContent = "Connecting... please wait";
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000); // 30s
-
-  const response = await fetch(`${API_URL}/applications`, {
+  const { ok, data } = await apiFetch("/applications", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name, mobile, email, state, neet,
-      neetscore: document.getElementById("neetscore").value
-    }),
-    signal: controller.signal
+    body: JSON.stringify({ name, mobile, email, state, neet, neetscore }),
   });
 
-  clearTimeout(timeout);
-
-  const data = await response.json();
-  console.log("Status:", response.status);
-  console.log("Response:", data);
-
-  if (!data.success) {
-    showError("name", "nameError", data.message);
-    startBtn.disabled = false;
-    startBtn.textContent = "Start Biology Assessment";
+  if (!ok || !data.success) {
+    showError("name", "nameError", data.message || "Something went wrong. Please try again.");
+    setButtonState(startBtn, false, "Start Biology Assessment");
     return;
   }
 
-} catch (err) {
-  console.error("Fetch Error:", err);
-  startBtn.disabled = false;
-  startBtn.textContent = "Start Biology Assessment";
+  // Save for result submission later
+  registrantData = { name, mobile, email, state, neet, neetscore };
 
-  if (err.name === "AbortError") {
-    showError("name", "nameError", "Server is waking up. Please wait 30 seconds and try again.");
-  } else {
-    showError("name", "nameError", "Cannot connect. Check your internet connection.");
-  }
-  return;
-}
-
-  // All valid — start quiz
+  // ---- Start quiz ----
+  setButtonState(startBtn, false, "Start Biology Assessment");
   registerSection.style.display = "none";
   quizSection.style.display     = "block";
 
-  currentQuestion  = 0;
-  selectedAnswers  = new Array(questions.length).fill(null);
-  score            = 0;
-  timeLeft         = totalTime;
+  currentQuestion = 0;
+  selectedAnswers = new Array(questions.length).fill(null);
+  score           = 0;
+  timeLeft        = totalTime;
 
   startTimer();
   renderQuestion();
@@ -221,11 +280,9 @@ function startTimer() {
 function updateTimer() {
   const timer = document.getElementById("timer");
   if (!timer) return;
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-  timer.innerHTML =
-    minutes.toString().padStart(2, "0") + ":" +
-    seconds.toString().padStart(2, "0");
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, "0");
+  const s = (timeLeft % 60).toString().padStart(2, "0");
+  timer.textContent = `${m}:${s}`;
 }
 
 // ========================
@@ -233,71 +290,41 @@ function updateTimer() {
 // ========================
 
 function renderQuestion() {
+  const q = questions[currentQuestion];
 
-    const q = questions[currentQuestion];
-
-    quizBox.innerHTML = `
-        <div class="quiz-card">
-
-            <div class="quiz-header">
-                <h3>Question ${currentQuestion + 1} / ${questions.length}</h3>
-
-                <div id="timer" class="timer">
-                    00:00
-                </div>
-            </div>
-
-            <div class="progress">
-                <div
-                    class="progress-fill"
-                    style="width:${((currentQuestion + 1) / questions.length) * 100}%">
-                </div>
-            </div>
-
-            <h2 class="question">
-                ${q.q}
-            </h2>
-
-            <div id="options">
-
-                ${q.opts.map((option,index)=>`
-
-                    <button
-                        class="option ${selectedAnswers[currentQuestion]===index ? "active" : ""}"
-                        onclick="selectAnswer(${index})">
-
-                        ${option}
-
-                    </button>
-
-                `).join("")}
-
-            </div>
-
-            <div class="quiz-buttons">
-
-                <button
-                    class="btn"
-                    onclick="previousQuestion()"
-                    ${currentQuestion===0 ? "disabled" : ""}>
-                    Previous
-                </button>
-
-                <button
-                    class="btn"
-                    onclick="nextQuestion()">
-
-                    ${currentQuestion===questions.length-1 ? "Finish" : "Next"}
-
-                </button>
-
-            </div>
-
+  quizBox.innerHTML = `
+    <div class="quiz-card">
+      <div class="quiz-header">
+        <h3>Question ${currentQuestion + 1} / ${questions.length}</h3>
+        <div id="timer" class="timer">00:00</div>
+      </div>
+      <div class="progress">
+        <div class="progress-fill"
+             style="width:${((currentQuestion + 1) / questions.length) * 100}%">
         </div>
-    `;
+      </div>
+      <h2 class="question">${q.q}</h2>
+      <div id="options">
+        ${q.opts.map((opt, i) => `
+          <button
+            class="option ${selectedAnswers[currentQuestion] === i ? "active" : ""}"
+            onclick="selectAnswer(${i})">
+            ${opt}
+          </button>
+        `).join("")}
+      </div>
+      <div class="quiz-buttons">
+        <button class="btn" onclick="previousQuestion()" ${currentQuestion === 0 ? "disabled" : ""}>
+          Previous
+        </button>
+        <button class="btn" onclick="nextQuestion()">
+          ${currentQuestion === questions.length - 1 ? "Finish" : "Next"}
+        </button>
+      </div>
+    </div>
+  `;
 
-    updateTimer();
-
+  updateTimer();
 }
 
 // ========================
@@ -315,13 +342,12 @@ function selectAnswer(answer) {
 
 function nextQuestion() {
   if (selectedAnswers[currentQuestion] == null) {
-    // Show inline error inside quiz card instead of alert
     const existing = document.getElementById("answerError");
     if (!existing) {
       const errMsg = document.createElement("p");
       errMsg.id = "answerError";
       errMsg.style.cssText = "color:red;font-size:13px;margin:6px 0 0;";
-      errMsg.textContent = "Please select an answer before continuing.";
+      errMsg.textContent   = "Please select an answer before continuing.";
       document.getElementById("options").after(errMsg);
     }
     return;
@@ -346,28 +372,47 @@ function previousQuestion() {
 // FINISH & RESULTS
 // ========================
 
-function finishQuiz() {
+async function finishQuiz() {
   clearInterval(timerInterval);
+
   score = 0;
-  questions.forEach((q, index) => {
-    if (selectedAnswers[index] === q.ans) score++;
+  questions.forEach((q, i) => {
+    if (selectedAnswers[i] === q.ans) score++;
   });
 
-  quizSection.style.display  = "none";
+  const percentage  = Math.round((score / questions.length) * 100);
+  const timeTaken   = totalTime - timeLeft; // seconds used
+
+  // Submit result to backend (non-blocking — don't wait to show results)
+  apiFetch("/results", {
+    method: "POST",
+    body: JSON.stringify({
+      ...registrantData,
+      score,
+      total:      questions.length,
+      percentage,
+      timeTaken,
+      submittedAt: new Date().toISOString(),
+    }),
+  }).then(({ ok, data }) => {
+    if (!ok) console.warn("Result submission failed:", data.message);
+    else     console.log("Result saved:", data);
+  });
+
+  // Show results
+  quizSection.style.display   = "none";
   resultSection.style.display = "block";
 
-  const percentage = Math.round((score / questions.length) * 100);
-
-  document.getElementById("scoreText").innerHTML  = score + " / " + questions.length;
-  document.getElementById("percentage").innerHTML = percentage + "%";
+  document.getElementById("scoreText").textContent  = `${score} / ${questions.length}`;
+  document.getElementById("percentage").textContent = `${percentage}%`;
 
   let remark = "";
-  if      (percentage >= 90) remark = "Trophy Excellent";
-  else if (percentage >= 75) remark = "Very Good";
-  else if (percentage >= 50) remark = "Good";
-  else                       remark = "Keep Practicing";
+  if      (percentage >= 90) remark = "🏆 Excellent";
+  else if (percentage >= 75) remark = "⭐ Very Good";
+  else if (percentage >= 50) remark = "👍 Good";
+  else                       remark = "📚 Keep Practicing";
 
-  document.getElementById("remark").innerHTML = remark;
+  document.getElementById("remark").textContent = remark;
 }
 
 // ========================
