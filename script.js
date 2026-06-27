@@ -57,212 +57,338 @@ const questions = [
   { q:'First heart sound is due to closure of:', opts:['Semilunar Valves','AV Valves','Aortic Valve','Pulmonary Valve'], ans:1 }
 ];
 
+// ======================================
+// MBBS Biology Quiz
+// Part 1 - Registration & Quiz Start
+// ======================================
+
+// Keep your existing questions array above this section.
+
+const API_URL = "https://online-webpage-mqpl.onrender.com/api/applications";
+
+// -------------------------------
+// Global Variables
+// -------------------------------
+
 let currentQuestion = 0;
 let selectedAnswers = [];
 let score = 0;
-let totalTime = 50 * 60;
+
+const totalTime = 50 * 60;
 let timeLeft = totalTime;
 let timerInterval = null;
 
+// -------------------------------
 // Elements
-const registerSection = document.getElementById("register");
-const quizSection     = document.getElementById("quiz");
-const resultSection   = document.getElementById("result");
-const startBtn        = document.getElementById("startQuiz");
-const quizBox         = document.getElementById("quizBox");
+// -------------------------------
 
-// ========================
-// INLINE ERROR HELPER
-// ========================
+const registerSection = document.getElementById("register");
+const quizSection = document.getElementById("quiz");
+const resultSection = document.getElementById("result");
+
+const startBtn = document.getElementById("startQuiz");
+const quizBox = document.getElementById("quizBox");
+
+// -------------------------------
+// Error Helpers
+// -------------------------------
 
 function showError(fieldId, errorId, message) {
-  const field = document.getElementById(fieldId);
-  const errorEl = document.getElementById(errorId);
-  if (errorEl) errorEl.textContent = message;
-  if (field) {
-    field.classList.add("input-error");
-    field.classList.remove("input-success");
-  }
+
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+
+    if (error) {
+        error.textContent = message;
+    }
+
+    if (field) {
+        field.classList.add("input-error");
+        field.classList.remove("input-success");
+    }
 }
 
 function clearError(fieldId, errorId) {
-  const field = document.getElementById(fieldId);
-  const errorEl = document.getElementById(errorId);
-  if (errorEl) errorEl.textContent = "";
-  if (field) {
-    field.classList.remove("input-error");
-    field.classList.add("input-success");
-  }
+
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+
+    if (error) {
+        error.textContent = "";
+    }
+
+    if (field) {
+        field.classList.remove("input-error");
+        field.classList.add("input-success");
+    }
 }
 
-// ========================
-// START QUIZ (single listener)
-// ========================
+// -------------------------------
+// Registration
+// -------------------------------
 
-startBtn.addEventListener("click", async () => {
-  const name      = document.getElementById("name").value.trim();
-  const mobile    = document.getElementById("mobile").value.trim();
-  const email     = document.getElementById("email").value.trim();
-  const state     = document.getElementById("state").value;
-  const neet      = document.getElementById("neet").value;
+startBtn.addEventListener("click", async (e) => {
 
-  let valid = true;
+    e.preventDefault();
 
+    const name = document.getElementById("name").value.trim();
+    const mobile = document.getElementById("mobile").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const state = document.getElementById("state").value;
+    const neet = document.getElementById("neet").value;
+    const neetscore = document.getElementById("neetscore").value.trim();
 
-  if (name === "") {
-    showError("name", "nameError", "Please enter your full name.");
-    valid = false;
-  } else if (!/^[A-Za-z\s]+$/.test(name)) {
-    showError("name", "nameError", "Name must contain only letters and spaces.");
-    valid = false;
-  } else {
-    clearError("name", "nameError");
-  }
+    let valid = true;
 
-  if (!/^[6-9]\d{9}$/.test(mobile)) {
-    showError("mobile", "mobileError", "Enter a valid 10-digit Indian mobile number.");
-    valid = false;
-  } else {
-    clearError("mobile", "mobileError");
-  }
+    // -----------------------
+    // Name
+    // -----------------------
 
-  if (!/^\S+@\S+\.\S+$/.test(email)) {
-    showError("email", "emailError", "Enter a valid email address.");
-    valid = false;
-  } else {
-    clearError("email", "emailError");
-  }
-
-  if (state === "Select State") {
-    showError("state", "stateError", "Please select your state.");
-    valid = false;
-  } else {
-    clearError("state", "stateError");
-  }
-
-  if (!valid) return;
-
-  try {
-
-    const API_URL = "https://online-webpage-mqpl.onrender.com/api/applications";
-
-fetch(`${API_URL}/applications`,{ 
-
-        method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-
-            name,
-            mobile,
-            email,
-            state,
-            neet,
-            neetscore: document.getElementById("neetscore").value
-
-        })
-
-    });
-
-    const data = await response.json();
-
-    if (!data.success) {
+    if (name === "") {
 
         showError(
             "name",
             "nameError",
-            "Registration failed."
+            "Please enter your name."
         );
 
-        return;
+        valid = false;
+
+    } else {
+
+        clearError("name", "nameError");
 
     }
 
-} catch (err) {
+    // -----------------------
+    // Mobile
+    // -----------------------
 
-    console.error(err);
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
 
-    showError(
-        "name",
-        "nameError",
-        "Cannot connect to backend."
-    );
+        showError(
+            "mobile",
+            "mobileError",
+            "Enter a valid 10-digit mobile number."
+        );
 
-    return;
+        valid = false;
 
-}
+    } else {
 
-  // All valid — start quiz
-  registerSection.style.display = "none";
-  quizSection.style.display     = "block";
+        clearError("mobile", "mobileError");
 
-  currentQuestion  = 0;
-  selectedAnswers  = new Array(questions.length).fill(null);
-  score            = 0;
-  timeLeft         = totalTime;
+    }
 
-  startTimer();
-  renderQuestion();
+    // -----------------------
+    // Email
+    // -----------------------
+
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+
+        showError(
+            "email",
+            "emailError",
+            "Enter a valid email."
+        );
+
+        valid = false;
+
+    } else {
+
+        clearError("email", "emailError");
+
+    }
+
+    // -----------------------
+    // State
+    // -----------------------
+
+    if (
+        state === "" ||
+        state === "Select State"
+    ) {
+
+        showError(
+            "state",
+            "stateError",
+            "Please select your state."
+        );
+
+        valid = false;
+
+    } else {
+
+        clearError("state", "stateError");
+
+    }
+
+    if (!valid) return;
+
+    // -----------------------
+    // Save to Backend
+    // -----------------------
+
+    try {
+
+        const response = await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify({
+
+                name,
+                mobile,
+                email,
+                state,
+                neet,
+                neetscore
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+
+            showError(
+                "name",
+                "nameError",
+                data.message || "Registration failed."
+            );
+
+            return;
+
+        }
+
+        // -----------------------
+        // Start Quiz
+        // -----------------------
+
+        registerSection.style.display = "none";
+        quizSection.style.display = "block";
+
+        currentQuestion = 0;
+        score = 0;
+        timeLeft = totalTime;
+
+        selectedAnswers = new Array(
+            questions.length
+        ).fill(null);
+
+        startTimer();
+        renderQuestion();
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        showError(
+            "name",
+            "nameError",
+            "Cannot connect to server."
+        );
+
+    }
+
 });
 
-// ========================
-// TIMER
-// ========================
+// ======================================
+// Part 2 - Timer & Question Rendering
+// ======================================
+
+// -------------------------------
+// Timer
+// -------------------------------
 
 function startTimer() {
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      finishQuiz();
-      return;
-    }
-    timeLeft--;
+
+    clearInterval(timerInterval);
+
     updateTimer();
-  }, 1000);
+
+    timerInterval = setInterval(() => {
+
+        if (timeLeft <= 0) {
+
+            clearInterval(timerInterval);
+            finishQuiz();
+            return;
+
+        }
+
+        timeLeft--;
+
+        updateTimer();
+
+    }, 1000);
+
 }
 
 function updateTimer() {
-  const timer = document.getElementById("timer");
-  if (!timer) return;
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-  timer.innerHTML =
-    minutes.toString().padStart(2, "0") + ":" +
-    seconds.toString().padStart(2, "0");
+
+    const timer = document.getElementById("timer");
+
+    if (!timer) return;
+
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+
+    timer.textContent =
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(seconds).padStart(2, "0");
+
 }
 
-// ========================
-// RENDER QUESTION
-// ========================
+// -------------------------------
+// Render Question
+// -------------------------------
 
 function renderQuestion() {
 
     const q = questions[currentQuestion];
 
     quizBox.innerHTML = `
+
         <div class="quiz-card">
 
             <div class="quiz-header">
-                <h3>Question ${currentQuestion + 1} / ${questions.length}</h3>
+
+                <h3>
+                    Question ${currentQuestion + 1}
+                    of
+                    ${questions.length}
+                </h3>
 
                 <div id="timer" class="timer">
                     00:00
                 </div>
+
             </div>
 
             <div class="progress">
+
                 <div
                     class="progress-fill"
                     style="width:${((currentQuestion + 1) / questions.length) * 100}%">
                 </div>
+
             </div>
 
             <h2 class="question">
+
                 ${q.q}
+
             </h2>
 
             <div id="options">
@@ -287,137 +413,276 @@ function renderQuestion() {
                     class="btn"
                     onclick="previousQuestion()"
                     ${currentQuestion===0 ? "disabled" : ""}>
+
                     Previous
+
                 </button>
 
                 <button
                     class="btn"
                     onclick="nextQuestion()">
 
-                    ${currentQuestion===questions.length-1 ? "Finish" : "Next"}
+                    ${currentQuestion===questions.length-1 ? "Finish Quiz" : "Next"}
 
                 </button>
 
             </div>
 
         </div>
+
     `;
 
     updateTimer();
 
 }
 
-// ========================
-// SELECT ANSWER
-// ========================
+// -------------------------------
+// Select Answer
+// -------------------------------
 
-function selectAnswer(answer) {
-  selectedAnswers[currentQuestion] = answer;
-  renderQuestion();
+function selectAnswer(index) {
+
+    selectedAnswers[currentQuestion] = index;
+
+    renderQuestion();
+
 }
 
-// ========================
-// NAVIGATION
-// ========================
+// ======================================
+// Part 3 - Navigation & Results
+// ======================================
+
+// -------------------------------
+// Next Question
+// -------------------------------
 
 function nextQuestion() {
-  if (selectedAnswers[currentQuestion] == null) {
-    // Show inline error inside quiz card instead of alert
-    const existing = document.getElementById("answerError");
-    if (!existing) {
-      const errMsg = document.createElement("p");
-      errMsg.id = "answerError";
-      errMsg.style.cssText = "color:red;font-size:13px;margin:6px 0 0;";
-      errMsg.textContent = "Please select an answer before continuing.";
-      document.getElementById("options").after(errMsg);
-    }
-    return;
-  }
 
-  if (currentQuestion < questions.length - 1) {
-    currentQuestion++;
-    renderQuestion();
-  } else {
-    finishQuiz();
-  }
+    if (selectedAnswers[currentQuestion] === null) {
+
+        let error = document.getElementById("answerError");
+
+        if (!error) {
+
+            error = document.createElement("p");
+
+            error.id = "answerError";
+            error.style.color = "#e53935";
+            error.style.marginTop = "10px";
+            error.style.fontSize = "14px";
+            error.style.fontWeight = "600";
+
+            error.textContent =
+                "Please select an answer before continuing.";
+
+            document
+                .getElementById("options")
+                .appendChild(error);
+
+        }
+
+        return;
+
+    }
+
+    const error = document.getElementById("answerError");
+
+    if (error) {
+
+        error.remove();
+
+    }
+
+    if (currentQuestion < questions.length - 1) {
+
+        currentQuestion++;
+
+        renderQuestion();
+
+    } else {
+
+        finishQuiz();
+
+    }
+
 }
+
+// -------------------------------
+// Previous Question
+// -------------------------------
 
 function previousQuestion() {
-  if (currentQuestion > 0) {
-    currentQuestion--;
-    renderQuestion();
-  }
+
+    if (currentQuestion > 0) {
+
+        currentQuestion--;
+
+        renderQuestion();
+
+    }
+
 }
 
-// ========================
-// FINISH & RESULTS
-// ========================
+// -------------------------------
+// Finish Quiz
+// -------------------------------
 
 function finishQuiz() {
-  clearInterval(timerInterval);
-  score = 0;
-  questions.forEach((q, index) => {
-    if (selectedAnswers[index] === q.ans) score++;
-  });
 
-  quizSection.style.display  = "none";
-  resultSection.style.display = "block";
+    clearInterval(timerInterval);
 
-  const percentage = Math.round((score / questions.length) * 100);
+    score = 0;
 
-  document.getElementById("scoreText").innerHTML  = score + " / " + questions.length;
-  document.getElementById("percentage").innerHTML = percentage + "%";
+    questions.forEach((question, index) => {
 
-  let remark = "";
-  if      (percentage >= 90) remark = "Trophy Excellent";
-  else if (percentage >= 75) remark = "Very Good";
-  else if (percentage >= 50) remark = "Good";
-  else                       remark = "Keep Practicing";
+        if (selectedAnswers[index] === question.ans) {
 
-  document.getElementById("remark").innerHTML = remark;
+            score++;
+
+        }
+
+    });
+
+    registerSection.style.display = "none";
+    quizSection.style.display = "none";
+    resultSection.style.display = "block";
+
+    const percentage = Math.round(
+        (score / questions.length) * 100
+    );
+
+    document.getElementById("scoreText").textContent =
+        `${score} / ${questions.length}`;
+
+    document.getElementById("percentage").textContent =
+        `${percentage}%`;
+
+    let remark = "";
+
+    if (percentage >= 90) {
+
+        remark = "🏆 Excellent";
+
+    }
+
+    else if (percentage >= 75) {
+
+        remark = "🌟 Very Good";
+
+    }
+
+    else if (percentage >= 50) {
+
+        remark = "👍 Good";
+
+    }
+
+    else {
+
+        remark = "📚 Keep Practicing";
+
+    }
+
+    document.getElementById("remark").textContent =
+        remark;
+
 }
 
-// ========================
-// RESTART QUIZ
-// ========================
+// -------------------------------
+// Restart Quiz
+// -------------------------------
 
 function restartQuiz() {
-  currentQuestion = 0;
-  score           = 0;
-  timeLeft        = totalTime;
-  selectedAnswers = new Array(questions.length).fill(null);
 
-  resultSection.style.display = "none";
-  quizSection.style.display   = "block";
+    clearInterval(timerInterval);
 
-  startTimer();
-  renderQuestion();
+    currentQuestion = 0;
+    score = 0;
+    timeLeft = totalTime;
+
+    selectedAnswers =
+        new Array(questions.length).fill(null);
+
+    resultSection.style.display = "none";
+    quizSection.style.display = "block";
+
+    startTimer();
+
+    renderQuestion();
+
 }
 
-// ========================
-// WHATSAPP SHARE
-// ========================
+// ======================================
+// Part 4 - WhatsApp & Initialization
+// ======================================
+
+// -------------------------------
+// Restart Button
+// -------------------------------
+
+const restartBtn = document.getElementById("restartBtn");
+
+if (restartBtn) {
+
+    restartBtn.addEventListener("click", restartQuiz);
+
+}
+
+// -------------------------------
+// WhatsApp Share
+// -------------------------------
 
 const whatsappBtn = document.getElementById("whatsappBtn");
+
 if (whatsappBtn) {
-  whatsappBtn.addEventListener("click", () => {
-    const percentage = Math.round((score / questions.length) * 100);
-    const message =
+
+    whatsappBtn.addEventListener("click", () => {
+
+        const percentage = Math.round(
+            (score / questions.length) * 100
+        );
+
+        const message =
 `Hello Dr. Abi,
 
-My Biology Assessment Result
+I have completed the MBBS Biology Assessment.
 
-Score      : ${score}/${questions.length}
+Score : ${score}/${questions.length}
 Percentage : ${percentage}%
 
-I am interested in MBBS admission at the International University of Kyrgyzstan.
+I am interested in MBBS admission at the
+International University of Kyrgyzstan.
 
 Please contact me.
 
 Thank you.`;
-    window.open(
-      "https://wa.me/919999999999?text=" + encodeURIComponent(message),
-      "_blank"
-    );
-  });
+
+        const phone = "919999999999"; // Replace with your WhatsApp number
+
+        window.open(
+            `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+            "_blank"
+        );
+
+    });
+
 }
+
+// -------------------------------
+// Initial Page Setup
+// -------------------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    if (registerSection)
+        registerSection.style.display = "block";
+
+    if (quizSection)
+        quizSection.style.display = "none";
+
+    if (resultSection)
+        resultSection.style.display = "none";
+
+    console.log("MBBS Biology Quiz Loaded Successfully");
+
+});
