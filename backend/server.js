@@ -14,7 +14,12 @@ const app = express();
 app.use(helmet());
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: [
+        "https://mbbs-iuk.vercel.app",
+        "http://localhost:5500",
+        "http://localhost:3000",
+        process.env.FRONTEND_URL
+    ].filter(Boolean),
     credentials: true
 }));
 
