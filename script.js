@@ -294,40 +294,16 @@ startBtn.addEventListener("click", async (e) => {
 
     try {
 
-        const response = await fetch(`${API_CONFIG.BASE_URL}/applications`, {
+        // Use apiFetch (has timeout + retry built in)
+const result = await apiFetch("/applications", {
+    method: "POST",
+    body: JSON.stringify({ name, mobile, email, state, neet, neetscore })
+});
 
-            method: "POST",
-
-            headers: {
-
-                "Content-Type": "application/json"
-
-            },
-
-            body: JSON.stringify({
-
-                name,
-                mobile,
-                email,
-                state,
-                neet,
-                neetscore
-
-            })
-
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-
-            showError(
-                "name",
-                "nameError",
-                data.message || "Registration failed."
-            );
-
-            return;
+if (!result.ok || !result.data.success) {
+    showError("name", "nameError", result.data.message || "Registration failed. Try again.");
+    return;
+}
 
         }
 
