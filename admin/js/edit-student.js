@@ -9,7 +9,11 @@ const id = params.get("id");
 // Load student data
 async function loadStudent() {
     try {
-        const response = await fetchfetch(`https://online-webpage-7yxo.onrender.com/api/applications/${id}`);
+        const response = await fetch(`https://online-webpage-7yxo.onrender.com/api/applications/${id}`, {
+    headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+});
         const result = await response.json();
 
         if (!result.success) {
@@ -47,7 +51,7 @@ document.getElementById("editForm").addEventListener("submit", async (e) => {
     };
 
     try {
-        const response = await fetch(`http://localhost:5000/api/applications/${id}`, {
+        const response = await fetch(`https://online-webpage-7yxo.onrender.com/api/applications/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"

@@ -8,7 +8,11 @@ const id = params.get("id");
 
 async function loadStudent() {
     try {
-        const response = await fetchfetch(`https://online-webpage-7yxo.onrender.com/api/applications/${id}`);
+        const response = await fetch(`https://online-webpage-7yxo.onrender.com/api/applications/${id}`, {
+    headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+});
         const result = await response.json();
 
         if (!result.success) {

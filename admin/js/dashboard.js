@@ -8,13 +8,12 @@ let allStudents = [];
 
 async function loadStudents() {
     try {
-        const response = await fetch("fetch(https://online-webpage-7yxo.onrender.com/api/applications");
-    {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
+      const response = await fetch("https://online-webpage-7yxo.onrender.com/api/applications", {
+    method: "GET",
+    headers: {
+        Authorization: `Bearer ${token}`
     }
-;
+});
         const result = await response.json();
 
         if (!result.success) {
